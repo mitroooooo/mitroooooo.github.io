@@ -1,48 +1,739 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>THE MITRO — Coming Soon</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THE MITRO</title>
+  <link rel="icon" href="logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
-    body{
-     margin:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: 
-    linear-gradient(rgba(11,11,15,0.6), rgba(11,11,15,0.6)),
-    url("bg.jpeg") center/cover no-repeat;
-  color:#fff;
-  font-family:Arial,Helvetica,sans-serif;
-  letter-spacing:.12em;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: rgba(255,255,255,0.08);
+      --text: #ffffff;
+      --muted: rgba(255,255,255,0.45);
+      --accent: #ffffff;
+      --nav-h: 64px;
     }
-    .wrap{text-align:center;padding:32px}
-    .logo{
-      width:300px;       /* регулируй размер */
-      margin-bottom:28px;
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
     }
-    h1{margin:0;font-size:64px;line-height:1}
-    p{margin:18px 0 0;opacity:.65;font-size:14px}
-    .email{margin-top:22px;opacity:.85;letter-spacing:.06em}
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.12em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--text); }
+
+    .nav-socials {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-socials a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-socials a:hover { color: var(--text); }
+
+    .nav-socials svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    /* ── HAMBURGER ── */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 1px;
+      background: var(--text);
+      transition: all 0.3s;
+    }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: var(--nav-h);
+      left: 0; right: 0;
+      background: rgba(10,10,10,0.98);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 40px;
+      z-index: 99;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .mobile-menu a:hover { color: var(--text); }
+    .mobile-socials {
+      display: flex;
+      gap: 20px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .mobile-socials a { color: var(--muted); }
+    .mobile-socials a:hover { color: var(--text); }
+    .mobile-socials svg { width: 20px; height: 20px; fill: currentColor; }
+
+    /* ── MAIN WRAPPER ── */
+    main {
+      padding-top: var(--nav-h);
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      display: none;
+      min-height: calc(100vh - var(--nav-h));
+      padding: 60px 40px 80px;
+      animation: fadeIn 0.35s ease;
+    }
+    section.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 5vw, 64px);
+      letter-spacing: 0.1em;
+      margin-bottom: 48px;
+      color: var(--text);
+      text-align: center;
+    }
+
+    /* ── WORK GRID ── */
+    .work-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 2px;
+    }
+
+    .poster-item {
+      position: relative;
+      aspect-ratio: 2/3;
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--surface);
+    }
+
+    .poster-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease, filter 0.5s ease;
+      filter: brightness(0.85);
+    }
+
+    .poster-item:hover img {
+      transform: scale(1.04);
+      filter: brightness(0.5);
+    }
+
+    .poster-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      gap: 12px;
+    }
+
+    .poster-item:hover .poster-overlay { opacity: 1; }
+
+    .play-icon {
+      width: 52px;
+      height: 52px;
+      border: 1.5px solid rgba(255,255,255,0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .play-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+      margin-left: 3px;
+    }
+
+    .poster-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* Placeholder poster when no image */
+    .poster-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
+      display: flex;
+      align-items: flex-end;
+      padding: 20px;
+    }
+    .poster-placeholder span {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── LISTEN / SOLO ── */
+    .widgets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .widget-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .widget-label {
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 14px 16px 10px;
+    }
+
+    .widget-embed {
+      width: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* ── CONTACT ── */
+    .contact-wrap {
+      max-width: 480px;
+    }
+
+    .contact-intro {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 48px;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+      color: var(--text);
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      transition: opacity 0.2s;
+    }
+
+    .contact-link:hover { opacity: 0.6; }
+
+    .contact-link svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+
+    .contact-link-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    /* ── CONTACT FORM ── */
+    .contact-socials {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin-bottom: 48px;
+    }
+    .contact-socials a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+      display: flex;
+    }
+    .contact-socials a:hover { color: var(--text); }
+    .contact-socials svg { width: 24px; height: 24px; fill: currentColor; }
+
+    .contact-msg-label {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 40px;
+    }
+
+    .contact-form-wrap { max-width: 580px; margin: 0 auto; }
+    .contact-form { display: flex; flex-direction: column; gap: 24px; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--text);
+    }
+
+    .req { font-weight: 300; font-size: 12px; color: var(--muted); }
+
+    .form-group input,
+    .form-group textarea {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 2px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+      resize: vertical;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus { border-color: rgba(255,255,255,0.5); }
+
+    .form-group textarea { min-height: 120px; }
+
+    .form-send-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.4);
+      padding: 14px 48px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      border-radius: 2px;
+    }
+
+    .form-send-btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.7);
+    }
+
+    .form-success {
+      display: none;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin-top: 12px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    footer span {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      nav { padding: 0 20px; }
+      .nav-links, .nav-socials { display: none; }
+      .hamburger { display: flex; }
+      section { padding: 40px 20px 60px; }
+      footer { padding: 24px 20px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
 
-    <!-- ЛОГОТИП -->
-    <img src="logo.png" class="logo" alt="THE MITRO logo">
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo" onclick="showSection('work')">THE MITRO</a>
 
-    <h1>THE MITRO</h1>
-    <p>COMING SOON</p>
+  <ul class="nav-links">
+    <li><a href="#" onclick="showSection('work')" id="nav-work" class="active">Work</a></li>
+    <li><a href="#" onclick="showSection('listen')" id="nav-listen">Listen</a></li>
+    <li><a href="#" onclick="showSection('solo')" id="nav-solo">Solo</a></li>
+    <li><a href="#" onclick="showSection('contact')" id="nav-contact">Contact</a></li>
+  </ul>
 
-    <div class="email">
-      <a href="mailto:mitro@themitro.com" style="color:white;text-decoration:none;">
-        mitro@themitro.com
+  <div class="nav-socials">
+    <!-- Instagram -->
+    <a href="https://instagram.com/YOUR_HANDLE" target="_blank" aria-label="Instagram">
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+    </a>
+    <!-- LinkedIn -->
+    <a href="https://linkedin.com/in/YOUR_PROFILE" target="_blank" aria-label="LinkedIn">
+      <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+    </a>
+    <!-- Spotify -->
+    <a href="https://open.spotify.com/artist/YOUR_ARTIST_ID" target="_blank" aria-label="Spotify">
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    </a>
+  </div>
+
+  <!-- Hamburger for mobile -->
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#" onclick="showSection('work');closeMobile()">Work</a>
+  <a href="#" onclick="showSection('listen');closeMobile()">Listen</a>
+  <a href="#" onclick="showSection('solo');closeMobile()">Solo</a>
+  <a href="#" onclick="showSection('contact');closeMobile()">Contact</a>
+  <div class="mobile-socials">
+    <a href="https://instagram.com/YOUR_HANDLE" target="_blank" aria-label="Instagram">
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+    </a>
+    <a href="https://linkedin.com/in/YOUR_PROFILE" target="_blank" aria-label="LinkedIn">
+      <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+    </a>
+    <a href="https://open.spotify.com/artist/YOUR_ARTIST_ID" target="_blank" aria-label="Spotify">
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    </a>
+  </div>
+</div>
+
+<main>
+
+  <!-- ══ WORK ══ -->
+  <section id="section-work" class="active">
+    <h1 class="section-title">Work</h1>
+    <div class="work-grid" id="work-grid">
+
+      <!--
+        КАК ДОБАВИТЬ ПОСТЕР:
+        Скопируй этот блок и замени:
+        - poster-1.jpg  → имя твоего файла картинки (загрузи в репозиторий рядом с index.html)
+        - https://youtu.be/XXXX → настоящая YouTube ссылка
+        - Film Title    → название фильма/трейлера
+      -->
+
+      <a class="poster-item" href="https://youtu.be/REPLACE_ME" target="_blank">
+        <img src="poster-1.jpg" alt="Film Title" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>Film Title</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">Film Title</span>
+        </div>
+      </a>
+
+      <a class="poster-item" href="https://youtu.be/REPLACE_ME" target="_blank">
+        <img src="poster-2.jpg" alt="Film Title 2" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>Film Title 2</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">Film Title 2</span>
+        </div>
+      </a>
+
+      <a class="poster-item" href="https://youtu.be/REPLACE_ME" target="_blank">
+        <img src="poster-3.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>Film Title 3</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">Film Title 3</span>
+        </div>
+      </a>
+
+      <!-- Добавляй сколько угодно блоков выше -->
+
+    </div>
+  </section>
+
+  <!-- ══ LISTEN ══ -->
+  <section id="section-listen">
+    <h1 class="section-title">Listen</h1>
+    <div class="widgets-grid">
+
+      <!--
+        КАК ДОБАВИТЬ SPOTIFY ВИДЖЕТ:
+        1. Открой Spotify → нужный трек/альбом/плейлист
+        2. Нажми ··· → Share → Embed track
+        3. Скопируй src из <iframe> и вставь ниже
+        Замени src="https://open.spotify.com/embed/..." на свой
+      -->
+
+      <div class="widget-card">
+        <p class="widget-label">Featured</p>
+        <iframe class="widget-embed"
+          src="https://open.spotify.com/embed/track/REPLACE_TRACK_ID?utm_source=generator&theme=0"
+          height="152"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"></iframe>
+      </div>
+
+      <div class="widget-card">
+        <p class="widget-label">Playlist</p>
+        <iframe class="widget-embed"
+          src="https://open.spotify.com/embed/playlist/REPLACE_PLAYLIST_ID?utm_source=generator&theme=0"
+          height="352"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"></iframe>
+      </div>
+
+      <!-- Добавляй виджеты по той же схеме -->
+
+    </div>
+  </section>
+
+  <!-- ══ SOLO ══ -->
+  <section id="section-solo">
+    <h1 class="section-title">Solo</h1>
+    <div class="widgets-grid">
+
+      <!--
+        То же что Listen — вставляй Spotify embed коды сюда
+      -->
+
+      <div class="widget-card">
+        <p class="widget-label">Solo Project</p>
+        <iframe class="widget-embed"
+          src="https://open.spotify.com/embed/album/REPLACE_ALBUM_ID?utm_source=generator&theme=0"
+          height="352"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"></iframe>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ CONTACT ══ -->
+  <section id="section-contact">
+    <h1 class="section-title" style="text-align:center;">Contact</h1>
+
+    <!-- Social icons row -->
+    <div class="contact-socials">
+      <a href="https://instagram.com/YOUR_HANDLE" target="_blank" aria-label="Instagram">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+      <a href="https://open.spotify.com/artist/YOUR_ARTIST_ID" target="_blank" aria-label="Spotify">
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      </a>
+      <a href="https://linkedin.com/in/YOUR_PROFILE" target="_blank" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
       </a>
     </div>
 
-  </div>
+    <!-- MESSAGE DIRECTLY label -->
+    <p class="contact-msg-label">Message Directly</p>
+
+    <!-- Form -->
+    <div class="contact-form-wrap">
+      <form class="contact-form" onsubmit="handleContactSubmit(event)">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name <span class="req">(required)</span></label>
+            <input type="text" name="firstname" required />
+          </div>
+          <div class="form-group">
+            <label>Last Name <span class="req">(required)</span></label>
+            <input type="text" name="lastname" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email <span class="req">(required)</span></label>
+          <input type="email" name="email" required />
+        </div>
+
+        <div class="form-group">
+          <label>Subject <span class="req">(required)</span></label>
+          <input type="text" name="subject" required />
+        </div>
+
+        <div class="form-group">
+          <label>Message <span class="req">(required)</span></label>
+          <textarea name="message" rows="5" required></textarea>
+        </div>
+
+        <div style="text-align:center; margin-top: 32px;">
+          <button type="submit" class="form-send-btn">Send</button>
+        </div>
+
+        <p class="form-success" id="form-success">Message sent — I'll be in touch soon.</p>
+
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>© THE MITRO 2026</span>
+  <span>themitro.com</span>
+</footer>
+
+<script>
+  async function handleContactSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('.form-send-btn');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    try {
+      const res = await fetch('https://formspree.io/f/mojznzjo', {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        form.reset();
+        document.getElementById('form-success').style.display = 'block';
+        btn.textContent = 'Sent';
+      } else {
+        btn.textContent = 'Error — try again';
+        btn.disabled = false;
+      }
+    } catch {
+      btn.textContent = 'Error — try again';
+      btn.disabled = false;
+    }
+  }
+
+  function showSection(name) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    const navLink = document.getElementById('nav-' + name);
+    if (navLink) navLink.classList.add('active');
+    event && event.preventDefault();
+  }
+
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  hamburger.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+  });
+
+  function closeMobile() {
+    mobileMenu.classList.remove('open');
+  }
+</script>
+
 </body>
 </html>
