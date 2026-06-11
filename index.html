@@ -176,98 +176,40 @@
       text-align: center;
     }
 
-    /* ── WORK GRID ── */
-    .work-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 3px;
-      max-width: 1100px;
+    /* ── WORK FEED ── */
+    .work-feed {
+      width: min(860px, 62vw);
       margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 72px;
     }
 
-    @media (max-width: 900px) {
-      .work-grid { grid-template-columns: repeat(2, 1fr); }
+    .work-item { display: flex; flex-direction: column; gap: 2px; }
+
+    .work-poster {
+      width: 100%;
+      display: block;
+      height: auto;
+    }
+
+    .work-item a { display: block; line-height: 0; }
+
+    .work-video {
+      aspect-ratio: 16 / 9;
+      background: #000;
+    }
+
+    .work-video iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
     }
 
     @media (max-width: 700px) {
-      .work-grid { grid-template-columns: repeat(2, 1fr); gap: 2px; }
-    }
-
-    .poster-item {
-      position: relative;
-      aspect-ratio: 2/3;
-      overflow: hidden;
-      cursor: pointer;
-      background: var(--surface);
-    }
-
-    .poster-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.5s ease, filter 0.5s ease;
-      filter: brightness(0.85);
-    }
-
-    .poster-item:hover img {
-      transform: scale(1.04);
-      filter: brightness(0.5);
-    }
-
-    .poster-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.35s ease;
-      gap: 12px;
-    }
-
-    .poster-item:hover .poster-overlay { opacity: 1; }
-
-    .play-icon {
-      width: 52px;
-      height: 52px;
-      border: 1.5px solid rgba(255,255,255,0.9);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .play-icon svg {
-      width: 20px;
-      height: 20px;
-      fill: white;
-      margin-left: 3px;
-    }
-
-    .poster-title {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.9);
-    }
-
-    /* Placeholder poster when no image */
-    .poster-placeholder {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
-      display: flex;
-      align-items: flex-end;
-      padding: 20px;
-    }
-    .poster-placeholder span {
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
+      .work-feed { width: 100%; gap: 48px; }
+      #section-work { padding-left: 8px; padding-right: 8px; }
     }
 
     /* ── LISTEN / SOLO ── */
@@ -643,116 +585,83 @@
   <!-- ══ WORK ══ -->
   <section id="section-work" class="active bg-space">
     <h1 class="section-title">Work</h1>
-    <div class="work-grid" id="work-grid">
+    <div class="work-feed">
 
-      <!--
-        КАК ДОБАВИТЬ ПОСТЕР:
-        Скопируй этот блок и замени:
-        - poster-1.jpg  → имя твоего файла картинки (загрузи в репозиторий рядом с index.html)
-        - https://youtu.be/XXXX → настоящая YouTube ссылка
-        - Film Title    → название фильма/трейлера
-      -->
-
-      <a class="poster-item" href="https://youtu.be/watch?v=-VIAsu_G7so" target="_blank">
-        <img src="CHIEFOFWAR.jpeg" alt="Film Title" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>Chief of War</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">Chief of War</span>
+      <div class="work-item">
+        <img class="work-poster" src="CHIEFOFWAR.jpeg" alt="Chief of War" loading="lazy">
+        <div class="work-video">
+          <iframe src="https://www.youtube.com/embed/-VIAsu_G7so" title="Chief of War — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-      </a>
+      </div>
 
-      <a class="poster-item" href="https://youtu.be/watch?v=Rc0jgWoZo9w" target="_blank">
-        <img src="02. SORRY BABY.jpeg" alt="Film Title 2" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>Sorry, Baby</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">Sorry, Baby</span>
+      <div class="work-item">
+        <img class="work-poster" src="02. SORRY BABY.jpeg" alt="Sorry, Baby" loading="lazy">
+        <div class="work-video">
+          <iframe src="https://www.youtube.com/embed/Rc0jgWoZo9w" title="Sorry, Baby — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-      </a>
+      </div>
 
-      <a class="poster-item" href="https://youtu.be/watch?v=SuOQbmC9PQk" target="_blank">
-        <img src="STARWARSVISIONS 3.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>Star Wars: Visions 3</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">Star Wars: Visions 3</span>
+      <div class="work-item">
+        <img class="work-poster" src="STARWARSVISIONS 3.jpg" alt="Star Wars: Visions" loading="lazy">
+        <div class="work-video">
+          <iframe src="https://www.youtube.com/embed/SuOQbmC9PQk" title="Star Wars: Visions — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-      </a>
+      </div>
 
-       <a class="poster-item" href="https://youtu.be/watch?v=Pr7R9hQuA2w" target="_blank">
-        <img src="11. HIJACK.jpeg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>HIJACK S2</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">HIJACK S2</span>
+      <div class="work-item">
+        <img class="work-poster" src="11. HIJACK.jpeg" alt="Hijack" loading="lazy">
+        <div class="work-video">
+          <iframe src="https://www.youtube.com/embed/Pr7R9hQuA2w" title="Hijack — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-      </a>
+      </div>
 
-       <a class="poster-item" href="https://youtu.be/watch?v=IYLHdEzsk1s" target="_blank">
-        <img src="04. MEGAN2.0.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>MEGAN 2.0</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">MEGAN 2.0</span>
+      <div class="work-item">
+        <img class="work-poster" src="04. MEGAN2.0.jpg" alt="M3GAN 2.0" loading="lazy">
+        <div class="work-video">
+          <iframe src="https://www.youtube.com/embed/IYLHdEzsk1s" title="M3GAN 2.0 — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-      </a>
+      </div>
 
-      <a class="poster-item" href="https://youtu.be/watch?v=GkywNANueew" target="_blank">
-        <img src="05. STARWARSTALES.jpeg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>Star Wars: Tales of the Underworld</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">Star Wars: Tales of the Underworld</span>
+      <div class="work-item">
+        <img class="work-poster" src="05. STARWARSTALES.jpeg" alt="Star Wars: Tales of the Underworld" loading="lazy">
+        <div class="work-video">
+          <iframe src="https://www.youtube.com/embed/GkywNANueew" title="Star Wars: Tales of the Underworld — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-      </a>
+      </div>
 
-         <a class="poster-item" href="https://youtu.be/watch?v=seBixtcx19E" target="_blank">
-        <img src="06. MISSING.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>MISSING</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">MISSING</span>
+      <div class="work-item">
+        <img class="work-poster" src="06. MISSING.jpg" alt="Missing" loading="lazy">
+        <div class="work-video">
+          <iframe src="https://www.youtube.com/embed/seBixtcx19E" title="Missing — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-      </a>
+      </div>
 
-        <a class="poster-item" href="https://www.instagram.com/p/CoxdWkxvBh3/" target="_blank">
-        <img src="07. MANDALORIAN.jpeg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>Mandalorian S3</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">Mandalorian S3</span>
+      <div class="work-item">
+        <a href="https://www.instagram.com/p/CoxdWkxvBh3/" target="_blank">
+          <img class="work-poster" src="07. MANDALORIAN.jpeg" alt="The Mandalorian" loading="lazy">
+        </a>
+      </div>
+
+      <div class="work-item">
+        <img class="work-poster" src="08. FASTX.jpeg" alt="Fast X" loading="lazy">
+        <div class="work-video">
+          <iframe src="https://www.youtube.com/embed/32RAq6JzY-w" title="Fast X — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-      </a>
+      </div>
 
-        <a class="poster-item" href="https://youtu.be/watch?v=32RAq6JzY-w" target="_blank">
-        <img src="08. FASTX.jpeg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>FAST X</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">FAST X</span>
+      <div class="work-item">
+        <img class="work-poster" src="09. PROTEGE.jpg" alt="The Protégé" loading="lazy">
+        <div class="work-video">
+          <iframe src="https://www.youtube.com/embed/fSqa0a3mGk8" title="The Protégé — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-      </a>
+      </div>
 
-        <a class="poster-item" href="https://youtu.be/watch?v=fSqa0a3mGk8" target="_blank">
-        <img src="09. PROTEGE.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>The Protégé</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">The Protégé</span>
+      <div class="work-item">
+        <img class="work-poster" src="10. FATALE.jpg" alt="Fatale" loading="lazy">
+        <div class="work-video">
+          <iframe src="https://www.youtube.com/embed/tPWURGgKJ7o" title="Fatale — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-      </a>
-
-        <a class="poster-item" href="https://youtu.be/watch?v=tPWURGgKJ7o" target="_blank">
-        <img src="10. FATALE.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>Fatale</span></div>
-        <div class="poster-overlay">
-          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">Fatale</span>
-        </div>
-      </a>
-
-      <!-- Добавляй сколько угодно блоков выше -->
+      </div>
 
     </div>
   </section>
