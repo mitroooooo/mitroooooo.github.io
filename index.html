@@ -931,13 +931,23 @@
   function showSection(name) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-    document.getElementById('section-' + name).classList.add('active');
+    const target = document.getElementById('section-' + name);
+    if (!target) return;
+    target.classList.add('active');
     const soloPages = ['selfaware1', 'selfaware2', 'goldenghost', 'galapogos'];
     const navLink = document.getElementById(soloPages.includes(name) ? 'nav-solo' : 'nav-' + name);
     if (navLink) navLink.classList.add('active');
+    if (history.replaceState) history.replaceState(null, '', '#' + name);
     window.scrollTo(0, 0);
     event && event.preventDefault();
   }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById('section-' + hash)) {
+      showSection(hash);
+    }
+  });
 
   const hamburger = document.getElementById('hamburger');
   const mobileMenu = document.getElementById('mobile-menu');
