@@ -177,12 +177,18 @@
     }
 
     /* ── WORK FEED ── */
+    #section-work {
+      padding-left: 0;
+      padding-right: 0;
+      padding-bottom: 0;
+    }
+
     .work-feed {
-      width: min(1200px, 80vw);
+      width: 100%;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 64px;
+      gap: 0;
     }
 
     .work-item {
@@ -202,7 +208,7 @@
       position: absolute;
       left: var(--vx, 35%);
       top: var(--vy, 30%);
-      width: var(--vw, 30%);
+      width: var(--vw, 33%);
       aspect-ratio: 16 / 9;
       background: #000;
       box-shadow: 0 8px 40px rgba(0,0,0,0.55);
@@ -216,8 +222,8 @@
     }
 
     @media (max-width: 700px) {
-      .work-feed { width: 92%; gap: 40px; }
-      .work-item { line-height: 0; }
+      #section-work { padding-left: 8px; padding-right: 8px; padding-bottom: 60px; }
+      .work-feed { width: 100%; gap: 48px; }
       .work-video {
         position: static;
         width: 100%;
@@ -604,49 +610,49 @@
 
       <div class="work-item">
         <img class="work-poster" src="Chief of War - WIDE.jpg" alt="Chief of War" loading="lazy">
-        <div class="work-video" style="--vx:56%; --vy:18%; --vw:30%;">
+        <div class="work-video" style="--vx:56%; --vy:18%; --vw:34%;">
           <iframe src="https://www.youtube.com/embed/-VIAsu_G7so" title="Chief of War — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
 
       <div class="work-item">
         <img class="work-poster" src="Sorry, Baby - WIDE.jpg" alt="Sorry, Baby" loading="lazy">
-        <div class="work-video" style="--vx:4%; --vy:55%; --vw:30%;">
+        <div class="work-video" style="--vx:4%; --vy:55%; --vw:34%;">
           <iframe src="https://www.youtube.com/embed/Rc0jgWoZo9w" title="Sorry, Baby — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
 
       <div class="work-item">
         <img class="work-poster" src="Star Wars Visions - WIDE.jpg" alt="Star Wars: Visions" loading="lazy">
-        <div class="work-video" style="--vx:35%; --vy:32%; --vw:30%;">
+        <div class="work-video" style="--vx:35%; --vy:32%; --vw:34%;">
           <iframe src="https://www.youtube.com/embed/SuOQbmC9PQk" title="Star Wars: Visions — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
 
       <div class="work-item">
         <img class="work-poster" src="Hijack - WIDE.jpg" alt="Hijack" loading="lazy">
-        <div class="work-video" style="--vx:37%; --vy:22%; --vw:27%;">
+        <div class="work-video" style="--vx:37%; --vy:22%; --vw:30%;">
           <iframe src="https://www.youtube.com/embed/Pr7R9hQuA2w" title="Hijack — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
 
       <div class="work-item">
         <img class="work-poster" src="Megan 2.0 - WIDE.jpg" alt="M3GAN 2.0" loading="lazy">
-        <div class="work-video" style="--vx:53%; --vy:55%; --vw:30%;">
+        <div class="work-video" style="--vx:53%; --vy:55%; --vw:34%;">
           <iframe src="https://www.youtube.com/embed/IYLHdEzsk1s" title="M3GAN 2.0 — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
 
       <div class="work-item">
         <img class="work-poster" src="Star Wars Tales - WIDE.jpg" alt="Star Wars: Tales of the Underworld" loading="lazy">
-        <div class="work-video" style="--vx:6%; --vy:18%; --vw:28%;">
+        <div class="work-video" style="--vx:6%; --vy:18%; --vw:31%;">
           <iframe src="https://www.youtube.com/embed/GkywNANueew" title="Star Wars: Tales of the Underworld — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
 
       <div class="work-item">
         <img class="work-poster" src="Missing - WIDE.jpeg" alt="Missing" loading="lazy">
-        <div class="work-video" style="--vx:5%; --vy:10%; --vw:30%;">
+        <div class="work-video" style="--vx:5%; --vy:10%; --vw:34%;">
           <iframe src="https://www.youtube.com/embed/seBixtcx19E" title="Missing — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
@@ -659,21 +665,21 @@
 
       <div class="work-item">
         <img class="work-poster" src="FAST X - WIDE.jpg" alt="Fast X" loading="lazy">
-        <div class="work-video" style="--vx:36%; --vy:60%; --vw:30%;">
+        <div class="work-video" style="--vx:36%; --vy:60%; --vw:34%;">
           <iframe src="https://www.youtube.com/embed/32RAq6JzY-w" title="Fast X — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
 
       <div class="work-item">
         <img class="work-poster" src="Protege - WIDE.jpg" alt="The Protégé" loading="lazy">
-        <div class="work-video" style="--vx:35%; --vy:50%; --vw:30%;">
+        <div class="work-video" style="--vx:35%; --vy:50%; --vw:34%;">
           <iframe src="https://www.youtube.com/embed/fSqa0a3mGk8" title="The Protégé — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
 
       <div class="work-item">
         <img class="work-poster" src="Fatale - WIDE.jpg" alt="Fatale" loading="lazy">
-        <div class="work-video" style="--vx:7%; --vy:12%; --vw:30%;">
+        <div class="work-video" style="--vx:7%; --vy:12%; --vw:34%;">
           <iframe src="https://www.youtube.com/embed/tPWURGgKJ7o" title="Fatale — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
