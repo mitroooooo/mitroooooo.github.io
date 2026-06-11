@@ -935,10 +935,17 @@
   }
 
   function showSection(name) {
-    document.querySelectorAll('iframe.widget-embed').forEach(f => {
-      const src = f.getAttribute('src');
-      if (src) { f.setAttribute('src', src); }
-    });
+    event && event.preventDefault();
+    if (!document.getElementById('section-' + name)) return;
+    if (('#' + name) === window.location.hash) {
+      window.location.reload();
+    } else {
+      window.location.hash = name;
+      window.location.reload();
+    }
+  }
+
+  function activateSection(name) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
     const target = document.getElementById('section-' + name);
@@ -947,15 +954,13 @@
     const soloPages = ['selfaware1', 'selfaware2', 'goldenghost', 'galapogos'];
     const navLink = document.getElementById(soloPages.includes(name) ? 'nav-solo' : 'nav-' + name);
     if (navLink) navLink.classList.add('active');
-    if (history.replaceState) history.replaceState(null, '', '#' + name);
     window.scrollTo(0, 0);
-    event && event.preventDefault();
   }
 
   window.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash.replace('#', '');
     if (hash && document.getElementById('section-' + hash)) {
-      showSection(hash);
+      activateSection(hash);
     }
   });
 
