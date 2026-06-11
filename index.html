@@ -935,6 +935,10 @@
   }
 
   function showSection(name) {
+    document.querySelectorAll('iframe.widget-embed').forEach(f => {
+      const src = f.getAttribute('src');
+      if (src) { f.setAttribute('src', src); }
+    });
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
     const target = document.getElementById('section-' + name);
