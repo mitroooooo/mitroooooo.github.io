@@ -179,8 +179,18 @@
     /* ── WORK GRID ── */
     .work-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 2px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px) {
+      .work-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 700px) {
+      .work-grid { grid-template-columns: repeat(2, 1fr); gap: 2px; }
     }
 
     .poster-item {
@@ -533,28 +543,100 @@
 
       <a class="poster-item" href="https://youtu.be/watch?v=-VIAsu_G7so" target="_blank">
         <img src="CHIEFOFWAR.jpeg" alt="Film Title" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>Chif of War</span></div>
+        <div class="poster-placeholder" style="display:none"><span>Chief of War</span></div>
         <div class="poster-overlay">
           <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">Film Title</span>
+          <span class="poster-title">Chief of War</span>
         </div>
       </a>
 
-      <a class="poster-item" href="https://youtu.be/REPLACE_ME" target="_blank">
-        <img src="poster-2.jpg" alt="Film Title 2" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>Film Title 2</span></div>
+      <a class="poster-item" href="https://youtu.be/watch?v=Rc0jgWoZo9w" target="_blank">
+        <img src="02. SORRY BABY.jpeg" alt="Film Title 2" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>Sorry, Baby</span></div>
         <div class="poster-overlay">
           <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">Film Title 2</span>
+          <span class="poster-title">Sorry, Baby</span>
         </div>
       </a>
 
-      <a class="poster-item" href="https://youtu.be/REPLACE_ME" target="_blank">
-        <img src="poster-3.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="poster-placeholder" style="display:none"><span>Film Title 3</span></div>
+      <a class="poster-item" href="https://youtu.be/watch?v=SuOQbmC9PQk" target="_blank">
+        <img src="STARWARSVISIONS 3.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>Star Wars: Visions 3</span></div>
         <div class="poster-overlay">
           <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-          <span class="poster-title">Film Title 3</span>
+          <span class="poster-title">Star Wars: Visions 3</span>
+        </div>
+      </a>
+
+       <a class="poster-item" href="https://youtu.be/watch?v=Pr7R9hQuA2w" target="_blank">
+        <img src="11. HIJACK.jpeg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>HIJACK S2</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">HIJACK S2</span>
+        </div>
+      </a>
+
+       <a class="poster-item" href="https://youtu.be/watch?v=IYLHdEzsk1s" target="_blank">
+        <img src="04. MEGAN2.0.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>MEGAN 2.0</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">MEGAN 2.0</span>
+        </div>
+      </a>
+
+      <a class="poster-item" href="https://youtu.be/watch?v=GkywNANueew" target="_blank">
+        <img src="05. STARWARTALES.jpeg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>Star Wars: Tales of the Underworld</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">Star Wars: Tales of the Underworld</span>
+        </div>
+      </a>
+
+         <a class="poster-item" href="https://youtu.be/watch?v=seBixtcx19E" target="_blank">
+        <img src="06. MISSING.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>MISSING</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">MISSING</span>
+        </div>
+      </a>
+
+        <a class="poster-item" href="https://www.instagram.com/p/CoxdWkxvBh3/" target="_blank">
+        <img src="07. MANDALORIAN.jpeg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>Mandalorian S3</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">Mandalorian S3</span>
+        </div>
+      </a>
+
+        <a class="poster-item" href="https://youtu.be/watch?v=32RAq6JzY-w" target="_blank">
+        <img src="08. FASTX.jpeg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>FAST X</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">FAST X</span>
+        </div>
+      </a>
+
+        <a class="poster-item" href="https://youtu.be/watch?v=fSqa0a3mGk8" target="_blank">
+        <img src="09. PROTEGE.jpg" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>The Protégé</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">The Protégé</span>
+        </div>
+      </a>
+
+        <a class="poster-item" href="https://youtu.be/watch?v=tPWURGgKJ7o" target="_blank">
+        <img src="10. FATALE" alt="Film Title 3" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none"><span>Fatale</span></div>
+        <div class="poster-overlay">
+          <div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <span class="poster-title">Fatale</span>
         </div>
       </a>
 
