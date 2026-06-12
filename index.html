@@ -771,6 +771,51 @@
       margin-top: 28px;
     }
 
+    /* ── PAGE ARROWS & SLIDE ── */
+    .page-arrow {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 50;
+      opacity: 0.4;
+      transition: opacity 0.25s;
+    }
+    .page-arrow:hover { opacity: 1; }
+    .page-arrow.left { left: 14px; }
+    .page-arrow.right { right: 14px; }
+    .page-arrow svg {
+      width: 30px; height: 30px;
+      stroke: #fff; stroke-width: 2; fill: none;
+      stroke-linecap: round; stroke-linejoin: round;
+      filter: drop-shadow(0 1px 6px rgba(0,0,0,0.6));
+    }
+
+    section.slide-from-right { animation: slideFromRight 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+    section.slide-from-left { animation: slideFromLeft 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+
+    @keyframes slideFromRight {
+      from { opacity: 0; transform: translateX(60px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideFromLeft {
+      from { opacity: 0; transform: translateX(-60px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (max-width: 700px) {
+      .page-arrow { display: none !important; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      section.slide-from-right, section.slide-from-left { animation: none; }
+    }
+
     /* ── FOOTER ── */
     footer {
       padding: 40px;
@@ -1186,15 +1231,70 @@
     }
   }
 
-  function showSection(name) {
-    event && event.preventDefault();
-    if (!document.getElementById('section-' + name)) return;
-    if (('#' + name) === window.location.hash) {
-      window.location.reload();
-    } else {
-      window.location.hash = name;
-      window.location.reload();
+  const pageOrder = ['about','work','listen','selfaware1','selfaware2','goldenghost','galapogos','client','contact'];
+
+  function muteSection(sec) {
+    // stop any playing embeds by clearing src (stored for restore)
+    sec.querySelectorAll('iframe').forEach(f => {
+      if (f.src) { f.dataset.src = f.src; f.src = ''; }
+    });
+    // close opened work videos
+    sec.querySelectorAll('.work-item.playing').forEach(item => closeWorkItem(item));
+  }
+
+  function restoreSection(sec) {
+    sec.querySelectorAll('iframe').forEach(f => {
+      if (!f.src && f.dataset.src) { f.src = f.dataset.src; }
+    });
+  }
+
+  function showSection(name, dir) {
+    if (typeof event !== 'undefined' && event) event.preventDefault();
+    const target = document.getElementById('section-' + name);
+    if (!target) return;
+    const current = document.querySelector('section.active');
+    if (current === target) return;
+
+    // determine slide direction if not given
+    if (!dir && current) {
+      const from = pageOrder.indexOf(current.id.replace('section-',''));
+      const to = pageOrder.indexOf(name);
+      dir = (to > from) ? 'right' : 'left';
     }
+
+    if (current) muteSection(current);
+    history.replaceState(null, '', '#' + name);
+    activateSection(name);
+    restoreSection(target);
+
+    // slide-in animation
+    target.classList.remove('slide-from-right', 'slide-from-left');
+    void target.offsetWidth; // reflow to restart animation
+    target.classList.add(dir === 'left' ? 'slide-from-left' : 'slide-from-right');
+
+    // reset logos reveal so it can replay
+    if (name === 'work') {
+      const lr = document.querySelector('.studio-logos');
+      if (lr) { lr.classList.remove('revealed'); observeLogos(); }
+    }
+    updateArrows(name);
+  }
+
+  function navigatePage(step) {
+    const current = document.querySelector('section.active');
+    if (!current) return;
+    const idx = pageOrder.indexOf(current.id.replace('section-',''));
+    const next = idx + step;
+    if (next < 0 || next >= pageOrder.length) return;
+    showSection(pageOrder[next], step > 0 ? 'right' : 'left');
+  }
+
+  function updateArrows(name) {
+    const idx = pageOrder.indexOf(name);
+    const left = document.querySelector('.page-arrow.left');
+    const right = document.querySelector('.page-arrow.right');
+    if (left) left.style.display = idx <= 0 ? 'none' : 'flex';
+    if (right) right.style.display = idx >= pageOrder.length - 1 ? 'none' : 'flex';
   }
 
   function activateSection(name) {
@@ -1207,6 +1307,7 @@
     const navLink = document.getElementById(soloPages.includes(name) ? 'nav-solo' : 'nav-' + name);
     if (navLink) navLink.classList.add('active');
     window.scrollTo(0, 0);
+    updateArrows(name);
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -1228,8 +1329,9 @@
   }
 
   // Studio logos: reveal one by one on scroll into view
-  const logosRow = document.querySelector('.studio-logos');
-  if (logosRow) {
+  function observeLogos() {
+    const logosRow = document.querySelector('.studio-logos');
+    if (!logosRow) return;
     logosRow.querySelectorAll('img').forEach((img, i) => {
       img.style.setProperty('--ld', (i * 350) + 'ms');
     });
@@ -1243,6 +1345,7 @@
     }, { threshold: 0.3 });
     obs.observe(logosRow);
   }
+  observeLogos();
 
   // Work: click poster -> swap to video (fills poster box)
   function closeWorkItem(item) {
@@ -1281,6 +1384,13 @@
     });
   });
 </script>
+
+  <div class="page-arrow left" onclick="navigatePage(-1)" aria-label="Previous page">
+    <svg viewBox="0 0 24 24" fill="none"><polyline points="14,5 7,12 14,19"/></svg>
+  </div>
+  <div class="page-arrow right" onclick="navigatePage(1)" aria-label="Next page">
+    <svg viewBox="0 0 24 24" fill="none"><polyline points="10,5 17,12 10,19"/></svg>
+  </div>
 
 </body>
 </html>
