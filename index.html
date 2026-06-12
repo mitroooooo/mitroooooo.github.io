@@ -615,15 +615,29 @@
 
     .listen-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
-      max-width: 1000px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      max-width: 1320px;
       margin: 0 auto;
+    }
+
+    .listen-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text);
+      text-align: center;
+      margin-bottom: 12px;
     }
 
     .listen-grid .disco-embed {
       border-radius: 10px;
       overflow: hidden;
+    }
+
+    @media (max-width: 1000px) {
+      .listen-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 800px) {
@@ -772,7 +786,7 @@
     <h1 class="section-title work-stagger" style="--d:0ms">Work</h1>
     <div class="work-feed">
 
-      <div class="work-item work-stagger" style="--d:150ms" data-video="-VIAsu_G7so" data-title="Chief of War">
+      <div class="work-item work-stagger" style="--d:600ms" data-video="-VIAsu_G7so" data-title="Chief of War">
         <img class="work-poster" src="Chief%20of%20War%20-%20WIDE.jpg" alt="Chief of War" loading="lazy">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -780,7 +794,7 @@
         </div>
       </div>
 
-      <div class="work-item work-stagger" style="--d:300ms" data-video="Rc0jgWoZo9w" data-title="Sorry, Baby">
+      <div class="work-item work-stagger" style="--d:1200ms" data-video="Rc0jgWoZo9w" data-title="Sorry, Baby">
         <img class="work-poster" src="Sorry,%20Baby%20-%20WIDE.jpg" alt="Sorry, Baby" loading="lazy">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -788,7 +802,7 @@
         </div>
       </div>
 
-      <div class="work-item work-stagger" style="--d:450ms" data-video="SuOQbmC9PQk" data-title="Star Wars: Visions">
+      <div class="work-item work-stagger" style="--d:1800ms" data-video="SuOQbmC9PQk" data-title="Star Wars: Visions">
         <img class="work-poster" src="VISIONS%201180DEPLOY.jpg" alt="Star Wars: Visions" loading="lazy">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -796,7 +810,7 @@
         </div>
       </div>
 
-      <div class="work-item work-stagger" style="--d:600ms" data-video="Pr7R9hQuA2w" data-title="Hijack">
+      <div class="work-item work-stagger" style="--d:2400ms" data-video="Pr7R9hQuA2w" data-title="Hijack">
         <img class="work-poster" src="Hijack%20-%20WIDE.jpg" alt="Hijack" loading="lazy">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -804,7 +818,7 @@
         </div>
       </div>
 
-      <div class="work-item work-stagger" style="--d:750ms" data-video="IYLHdEzsk1s" data-title="M3GAN 2.0">
+      <div class="work-item work-stagger" style="--d:3000ms" data-video="IYLHdEzsk1s" data-title="M3GAN 2.0">
         <img class="work-poster" src="MEGAN%201180DEPLOY.jpg" alt="M3GAN 2.0" loading="lazy">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -812,7 +826,7 @@
         </div>
       </div>
 
-      <div class="work-item work-stagger" style="--d:900ms" data-video="GkywNANueew" data-title="Star Wars: Tales of the Underworld">
+      <div class="work-item work-stagger" style="--d:3600ms" data-video="GkywNANueew" data-title="Star Wars: Tales of the Underworld">
         <img class="work-poster" src="TALES%201180DEPLOY.jpg" alt="Star Wars: Tales of the Underworld" loading="lazy">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -820,7 +834,7 @@
         </div>
       </div>
 
-      <div class="work-item work-stagger" style="--d:1050ms" data-video="seBixtcx19E" data-title="Missing">
+      <div class="work-item work-stagger" style="--d:4200ms" data-video="seBixtcx19E" data-title="Missing">
         <img class="work-poster" src="MISSING%201180DEPLOY.jpeg" alt="Missing" loading="lazy">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -828,7 +842,7 @@
         </div>
       </div>
 
-      <div class="work-item work-stagger" style="--d:1200ms">
+      <div class="work-item work-stagger" style="--d:4800ms">
         <a href="https://www.instagram.com/p/CoxdWkxvBh3/" target="_blank">
           <img class="work-poster" src="MANDOLORIAN%201180DEPLOY.jpg" alt="The Mandalorian" loading="lazy">
           <div class="work-hover">
@@ -838,7 +852,7 @@
         </a>
       </div>
 
-      <div class="work-item work-stagger" style="--d:1350ms" data-video="32RAq6JzY-w" data-title="Fast X">
+      <div class="work-item work-stagger" style="--d:5400ms" data-video="32RAq6JzY-w" data-title="Fast X">
         <img class="work-poster" src="FASTX%201180DEPLOY.jpg" alt="Fast X" loading="lazy">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -846,7 +860,7 @@
         </div>
       </div>
 
-      <div class="work-item work-stagger" style="--d:1500ms" data-video="fSqa0a3mGk8" data-title="The Protégé">
+      <div class="work-item work-stagger" style="--d:6000ms" data-video="fSqa0a3mGk8" data-title="The Protégé">
         <img class="work-poster" src="PROTEGE%201180DEPLOY.jpg" alt="The Protégé" loading="lazy">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -854,7 +868,7 @@
         </div>
       </div>
 
-      <div class="work-item work-stagger" style="--d:1650ms" data-video="tPWURGgKJ7o" data-title="Fatale">
+      <div class="work-item work-stagger" style="--d:6600ms" data-video="tPWURGgKJ7o" data-title="Fatale">
         <img class="work-poster" src="FATALE%201180DEPLOY.jpg" alt="Fatale" loading="lazy">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -871,25 +885,33 @@
     <p class="listen-intro">to some music I've been working on recently</p>
     <div class="listen-grid">
 
-      <!-- BANGERS -->
-      <iframe id="disco-playlist-29706706" name="disco-playlist-29706706" allowfullscreen frameborder="0" class="disco-embed"
-        src="https://themitro.disco.ac/e/p/29706706?download=false&s=X-eQ45lsJXUw47_Fw7oUC_PwDqQ%3ACJj8dtLy&artwork=true&color=%23FFFC52&theme=dark"
-        width="100%" height="560"></iframe>
+      <div class="listen-col">
+        <p class="listen-label">BANGERS</p>
+        <iframe id="disco-playlist-29706706" name="disco-playlist-29706706" allowfullscreen frameborder="0" class="disco-embed"
+          src="https://themitro.disco.ac/e/p/29706706?download=false&s=X-eQ45lsJXUw47_Fw7oUC_PwDqQ%3ACJj8dtLy&artwork=true&color=%23FFFC52&theme=dark"
+          width="100%" height="820"></iframe>
+      </div>
 
-      <!-- EMOTIONAL -->
-      <iframe id="disco-playlist-29706741" name="disco-playlist-29706741" allowfullscreen frameborder="0" class="disco-embed"
-        src="https://themitro.disco.ac/e/p/29706741?download=false&s=9y8iZD_pwGmspn9geW-FgMBK5PE%3AhIx8YKJE&artwork=true&color=%23FFFC52&theme=dark"
-        width="100%" height="560"></iframe>
+      <div class="listen-col">
+        <p class="listen-label">EMOTIONAL</p>
+        <iframe id="disco-playlist-29706741" name="disco-playlist-29706741" allowfullscreen frameborder="0" class="disco-embed"
+          src="https://themitro.disco.ac/e/p/29706741?download=false&s=9y8iZD_pwGmspn9geW-FgMBK5PE%3AhIx8YKJE&artwork=true&color=%23FFFC52&theme=dark"
+          width="100%" height="820"></iframe>
+      </div>
 
-      <!-- SOUNDTRACK -->
-      <iframe id="disco-playlist-29706794" name="disco-playlist-29706794" allowfullscreen frameborder="0" class="disco-embed"
-        src="https://themitro.disco.ac/e/p/29706794?download=false&s=ht-YpOq8nXiYIABajT9eQUrjHdg%3A4WqeLh8M&artwork=true&color=%23FFFC52&theme=dark"
-        width="100%" height="560"></iframe>
+      <div class="listen-col">
+        <p class="listen-label">SOUNDTRACK</p>
+        <iframe id="disco-playlist-29706794" name="disco-playlist-29706794" allowfullscreen frameborder="0" class="disco-embed"
+          src="https://themitro.disco.ac/e/p/29706794?download=false&s=ht-YpOq8nXiYIABajT9eQUrjHdg%3A4WqeLh8M&artwork=true&color=%23FFFC52&theme=dark"
+          width="100%" height="820"></iframe>
+      </div>
 
-      <!-- THRILLER -->
-      <iframe id="disco-playlist-29706851" name="disco-playlist-29706851" allowfullscreen frameborder="0" class="disco-embed"
-        src="https://themitro.disco.ac/e/p/29706851?download=false&s=TXjZkdmyWhYbLhCpvT9kxHMpNQ8%3AcpAqw6WM&artwork=true&color=%23FFFC52&theme=dark"
-        width="100%" height="560"></iframe>
+      <div class="listen-col">
+        <p class="listen-label">THRILLER</p>
+        <iframe id="disco-playlist-29706851" name="disco-playlist-29706851" allowfullscreen frameborder="0" class="disco-embed"
+          src="https://themitro.disco.ac/e/p/29706851?download=false&s=TXjZkdmyWhYbLhCpvT9kxHMpNQ8%3AcpAqw6WM&artwork=true&color=%23FFFC52&theme=dark"
+          width="100%" height="820"></iframe>
+      </div>
 
     </div>
   </section>
