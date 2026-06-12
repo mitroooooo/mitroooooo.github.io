@@ -51,6 +51,15 @@
       letter-spacing: 0.12em;
       color: var(--text);
       text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-bolt {
+      height: 26px;
+      width: auto;
+      display: block;
     }
 
     .nav-links {
@@ -750,7 +759,7 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo" onclick="showSection('about')">THE MITRO</a>
+  <a href="#" class="nav-logo" onclick="showSection('about')"><img class="logo-bolt" src="LIGHTNING.webp" alt="">THE MITRO</a>
 
   <ul class="nav-links">
     <li><a href="#" onclick="showSection('about')" id="nav-about">About</a></li>
