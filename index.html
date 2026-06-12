@@ -194,6 +194,8 @@
     .work-item {
       position: relative;
       line-height: 0;
+      cursor: pointer;
+      overflow: hidden;
     }
 
     .work-poster {
@@ -204,33 +206,79 @@
 
     .work-item a { display: block; line-height: 0; }
 
-    .work-video {
+    /* hover overlay */
+    .work-hover {
       position: absolute;
-      left: var(--vx, 35%);
-      top: var(--vy, 30%);
-      width: var(--vw, 33%);
-      aspect-ratio: 16 / 9;
-      background: #000;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.55);
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      background: rgba(0,0,0,0);
+      opacity: 0;
+      transition: opacity 0.35s ease, background 0.35s ease;
+      pointer-events: none;
     }
 
-    .work-video iframe {
-      width: 100%;
-      height: 100%;
-      border: 0;
-      display: block;
+    .work-item:hover .work-hover {
+      opacity: 1;
+      background: rgba(0,0,0,0.45);
     }
+
+    .work-play {
+      width: 76px;
+      height: 76px;
+      border: 2px solid rgba(255,255,255,0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.25s ease;
+    }
+
+    .work-item:hover .work-play { transform: scale(1.08); }
+
+    .work-play svg {
+      width: 30px;
+      height: 30px;
+      fill: #fff;
+      margin-left: 5px;
+    }
+
+    .work-hover-title {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+      line-height: 1.4;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    /* active video state */
+    .work-item.playing { cursor: default; }
+    .work-item.playing .work-poster,
+    .work-item.playing .work-hover { display: none; }
+
+    .work-item .work-embed {
+      display: none;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      background: #000;
+    }
+
+    .work-item.playing .work-embed { display: block; }
 
     @media (max-width: 700px) {
-      #section-work { padding-left: 8px; padding-right: 8px; padding-bottom: 60px; }
-      .work-feed { width: 100%; gap: 48px; }
-      .work-video {
-        position: static;
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        margin-top: 2px;
-        box-shadow: none;
-      }
+      #section-work { padding-left: 0; padding-right: 0; padding-bottom: 40px; }
+      .work-feed { width: 100%; gap: 0; }
+      .work-play { width: 60px; height: 60px; }
+      .work-play svg { width: 24px; height: 24px; }
+      .work-hover-title { font-size: 11px; }
     }
 
     /* ── LISTEN / SOLO ── */
@@ -608,112 +656,89 @@
     <h1 class="section-title">Work</h1>
     <div class="work-feed">
 
-      <div class="work-item">
-        <picture>
-          <source media="(max-width: 700px)" srcset="CHIEFOFWAR.jpeg">
-          <img class="work-poster" src="Chief of War - WIDE.jpg" alt="Chief of War" loading="lazy">
-        </picture>
-        <div class="work-video" style="--vx:56%; --vy:18%; --vw:30%;">
-          <iframe src="https://www.youtube.com/embed/-VIAsu_G7so" title="Chief of War — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="work-item" data-video="-VIAsu_G7so" data-title="Chief of War">
+        <img class="work-poster" src="Chief%20of%20War%20-%20WIDE.jpg" alt="Chief of War" loading="lazy">
+        <div class="work-hover">
+          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          <span class="work-hover-title">Chief of War — Trailer</span>
         </div>
       </div>
 
-      <div class="work-item">
-        <picture>
-          <source media="(max-width: 700px)" srcset="02.%20SORRY%20BABY.jpeg">
-          <img class="work-poster" src="Sorry, Baby - WIDE.jpg" alt="Sorry, Baby" loading="lazy">
-        </picture>
-        <div class="work-video" style="--vx:27%; --vy:30%; --vw:30%;">
-          <iframe src="https://www.youtube.com/embed/Rc0jgWoZo9w" title="Sorry, Baby — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="work-item" data-video="Rc0jgWoZo9w" data-title="Sorry, Baby">
+        <img class="work-poster" src="Sorry,%20Baby%20-%20WIDE.jpg" alt="Sorry, Baby" loading="lazy">
+        <div class="work-hover">
+          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          <span class="work-hover-title">Sorry, Baby — Trailer</span>
         </div>
       </div>
 
-      <div class="work-item">
-        <picture>
-          <source media="(max-width: 700px)" srcset="STARWARSVISIONS%203.jpg">
-          <img class="work-poster" src="Star Wars Visions - WIDE 2.jpg" alt="Star Wars: Visions" loading="lazy">
-        </picture>
-        <div class="work-video" style="--vx:8%; --vy:55%; --vw:30%;">
-          <iframe src="https://www.youtube.com/embed/SuOQbmC9PQk" title="Star Wars: Visions — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="work-item" data-video="SuOQbmC9PQk" data-title="Star Wars: Visions">
+        <img class="work-poster" src="VISIONS%201180DEPLOY.jpg" alt="Star Wars: Visions" loading="lazy">
+        <div class="work-hover">
+          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          <span class="work-hover-title">Star Wars: Visions — Trailer</span>
         </div>
       </div>
 
-      <div class="work-item">
-        <picture>
-          <source media="(max-width: 700px)" srcset="11.%20HIJACK.jpeg">
-          <img class="work-poster" src="Hijack - WIDE.jpg" alt="Hijack" loading="lazy">
-        </picture>
-        <div class="work-video" style="--vx:37%; --vy:22%; --vw:30%;">
-          <iframe src="https://www.youtube.com/embed/Pr7R9hQuA2w" title="Hijack — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="work-item" data-video="Pr7R9hQuA2w" data-title="Hijack">
+        <img class="work-poster" src="Hijack%20-%20WIDE.jpg" alt="Hijack" loading="lazy">
+        <div class="work-hover">
+          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          <span class="work-hover-title">Hijack — Trailer</span>
         </div>
       </div>
 
-      <div class="work-item">
-        <picture>
-          <source media="(max-width: 700px)" srcset="04.%20MEGAN2.0.jpg">
-          <img class="work-poster" src="Megan 2.0 - WIDE.jpg" alt="M3GAN 2.0" loading="lazy">
-        </picture>
-        <div class="work-video" style="--vx:48%; --vy:55%; --vw:30%;">
-          <iframe src="https://www.youtube.com/embed/IYLHdEzsk1s" title="M3GAN 2.0 — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="work-item" data-video="IYLHdEzsk1s" data-title="M3GAN 2.0">
+        <img class="work-poster" src="MEGAN%201180DEPLOY.jpg" alt="M3GAN 2.0" loading="lazy">
+        <div class="work-hover">
+          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          <span class="work-hover-title">M3GAN 2.0 — Trailer</span>
         </div>
       </div>
 
-      <div class="work-item">
-        <picture>
-          <source media="(max-width: 700px)" srcset="05.%20STARWARSTALES.jpeg">
-          <img class="work-poster" src="Star Wars Tales - WIDE 2.jpg" alt="Star Wars: Tales of the Underworld" loading="lazy">
-        </picture>
-        <div class="work-video" style="--vx:33%; --vy:34%; --vw:30%;">
-          <iframe src="https://www.youtube.com/embed/GkywNANueew" title="Star Wars: Tales of the Underworld — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="work-item" data-video="GkywNANueew" data-title="Star Wars: Tales of the Underworld">
+        <img class="work-poster" src="TALES%201180DEPLOY.jpg" alt="Star Wars: Tales of the Underworld" loading="lazy">
+        <div class="work-hover">
+          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          <span class="work-hover-title">Star Wars: Tales of the Underworld — Trailer</span>
         </div>
       </div>
 
-      <div class="work-item">
-        <picture>
-          <source media="(max-width: 700px)" srcset="06.%20MISSING.jpg">
-          <img class="work-poster" src="Missing - WIDE.jpeg" alt="Missing" loading="lazy">
-        </picture>
-        <div class="work-video" style="--vx:5%; --vy:10%; --vw:30%;">
-          <iframe src="https://www.youtube.com/embed/seBixtcx19E" title="Missing — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="work-item" data-video="seBixtcx19E" data-title="Missing">
+        <img class="work-poster" src="MISSING%201180DEPLOY.jpg" alt="Missing" loading="lazy">
+        <div class="work-hover">
+          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          <span class="work-hover-title">Missing — Trailer</span>
         </div>
       </div>
 
       <div class="work-item">
         <a href="https://www.instagram.com/p/CoxdWkxvBh3/" target="_blank">
-          <picture>
-          <source media="(max-width: 700px)" srcset="07.%20MANDALORIAN.jpeg">
-          <img class="work-poster" src="Mandalorian S3 - WIDE.jpg" alt="The Mandalorian" loading="lazy">
-        </picture>
+          <img class="work-poster" src="MANDOLORIAN%201180DEPLOY.jpg" alt="The Mandalorian" loading="lazy">
         </a>
       </div>
 
-      <div class="work-item">
-        <picture>
-          <source media="(max-width: 700px)" srcset="08.%20FASTX.jpeg">
-          <img class="work-poster" src="FAST X - WIDE.jpg" alt="Fast X" loading="lazy">
-        </picture>
-        <div class="work-video" style="--vx:36%; --vy:60%; --vw:30%;">
-          <iframe src="https://www.youtube.com/embed/32RAq6JzY-w" title="Fast X — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="work-item" data-video="32RAq6JzY-w" data-title="Fast X">
+        <img class="work-poster" src="FASTX%201180DEPLOY.jpg" alt="Fast X" loading="lazy">
+        <div class="work-hover">
+          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          <span class="work-hover-title">Fast X — Trailer</span>
         </div>
       </div>
 
-      <div class="work-item">
-        <picture>
-          <source media="(max-width: 700px)" srcset="09.%20PROTEGE.jpg">
-          <img class="work-poster" src="Protege - WIDE.jpg" alt="The Protégé" loading="lazy">
-        </picture>
-        <div class="work-video" style="--vx:35%; --vy:50%; --vw:30%;">
-          <iframe src="https://www.youtube.com/embed/fSqa0a3mGk8" title="The Protégé — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="work-item" data-video="fSqa0a3mGk8" data-title="The Protégé">
+        <img class="work-poster" src="PROTEGE%201180DEPLOY.jpg" alt="The Protégé" loading="lazy">
+        <div class="work-hover">
+          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          <span class="work-hover-title">The Protégé — Trailer</span>
         </div>
       </div>
 
-      <div class="work-item">
-        <picture>
-          <source media="(max-width: 700px)" srcset="10.%20FATALE.jpg">
-          <img class="work-poster" src="Fatale - WIDE.jpg" alt="Fatale" loading="lazy">
-        </picture>
-        <div class="work-video" style="--vx:7%; --vy:12%; --vw:30%;">
-          <iframe src="https://www.youtube.com/embed/tPWURGgKJ7o" title="Fatale — Trailer" loading="lazy" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <div class="work-item" data-video="tPWURGgKJ7o" data-title="Fatale">
+        <img class="work-poster" src="FATALE%201180DEPLOY.jpg" alt="Fatale" loading="lazy">
+        <div class="work-hover">
+          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          <span class="work-hover-title">Fatale — Trailer</span>
         </div>
       </div>
 
@@ -937,6 +962,24 @@
   function closeMobile() {
     mobileMenu.classList.remove('open');
   }
+
+  // Work: click poster -> swap to video
+  document.querySelectorAll('.work-item[data-video]').forEach(item => {
+    item.addEventListener('click', () => {
+      if (item.classList.contains('playing')) return;
+      const vid = item.getAttribute('data-video');
+      const title = item.getAttribute('data-title') || '';
+      const iframe = document.createElement('iframe');
+      iframe.className = 'work-embed';
+      iframe.src = 'https://www.youtube.com/embed/' + vid + '?autoplay=1';
+      iframe.title = title + ' — Trailer';
+      iframe.setAttribute('frameborder', '0');
+      iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+      iframe.setAttribute('allowfullscreen', '');
+      item.appendChild(iframe);
+      item.classList.add('playing');
+    });
+  });
 </script>
 
 </body>
