@@ -682,6 +682,50 @@
       .listen-grid { grid-template-columns: 1fr; max-width: 520px; }
     }
 
+    /* ── STUDIO LOGOS ── */
+    .studio-logos {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: nowrap;
+      gap: 56px;
+      padding: 90px 40px 100px;
+    }
+
+    .studio-logos img {
+      height: 34px;
+      width: auto;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 1.1s ease, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+      transition-delay: var(--ld, 0ms);
+    }
+
+    .studio-logos.revealed img {
+      opacity: 0.85;
+      transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .studio-logos img { transition: none; opacity: 0.85; transform: none; }
+    }
+
+    @media (max-width: 900px) {
+      .studio-logos {
+        flex-wrap: wrap;
+        gap: 28px 36px;
+        padding: 60px 24px 70px;
+        max-width: 420px;
+        margin: 0 auto;
+      }
+      .studio-logos img {
+        height: 24px;
+        opacity: 0.85;
+        transform: none;
+        transition: none;
+      }
+    }
+
     /* ── CLIENT PAGE ── */
     .client-intro {
       text-align: center;
@@ -927,6 +971,17 @@
         </div>
       </div>
 
+    
+      <!-- studio logos -->
+      <div class="studio-logos">
+        <img src="logo_universal.png" alt="Universal" loading="lazy">
+        <img src="logo_sony.png" alt="Sony Pictures" loading="lazy">
+        <img src="logo_disney.png" alt="Disney+" loading="lazy">
+        <img src="logo_a24.png" alt="A24" loading="lazy">
+        <img src="logo_appletv.png" alt="Apple TV+" loading="lazy">
+        <img src="logo_lucasfilm.png" alt="Lucasfilm" loading="lazy">
+        <img src="logo_lionsgate.png" alt="Lionsgate" loading="lazy">
+      </div>
     </div>
   </section>
 
@@ -1170,6 +1225,23 @@
 
   function closeMobile() {
     mobileMenu.classList.remove('open');
+  }
+
+  // Studio logos: reveal one by one on scroll into view
+  const logosRow = document.querySelector('.studio-logos');
+  if (logosRow) {
+    logosRow.querySelectorAll('img').forEach((img, i) => {
+      img.style.setProperty('--ld', (i * 350) + 'ms');
+    });
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          logosRow.classList.add('revealed');
+          obs.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+    obs.observe(logosRow);
   }
 
   // Work: click poster -> swap to video (fills poster box)
