@@ -603,6 +603,33 @@
     }
 
 
+    /* ── LISTEN GRID ── */
+    .listen-intro {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      margin-top: -28px;
+      margin-bottom: 44px;
+    }
+
+    .listen-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .listen-grid .disco-embed {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    @media (max-width: 800px) {
+      .listen-grid { grid-template-columns: 1fr; max-width: 520px; }
+    }
+
     /* ── CLIENT PAGE ── */
     .client-intro {
       text-align: center;
@@ -841,26 +868,28 @@
   <!-- ══ LISTEN ══ -->
   <section id="section-listen" class="bg-space">
     <h1 class="section-title">Listen</h1>
-    <div class="widgets-grid">
+    <p class="listen-intro">to some music I've been working on recently</p>
+    <div class="listen-grid">
 
-      <!--
-        КАК ДОБАВИТЬ SPOTIFY ВИДЖЕТ:
-        1. Открой Spotify → нужный трек/альбом/плейлист
-        2. Нажми ··· → Share → Embed track
-        3. Скопируй src из <iframe> и вставь ниже
-        Замени src="https://open.spotify.com/embed/..." на свой
-      -->
+      <!-- BANGERS -->
+      <iframe id="disco-playlist-29706706" name="disco-playlist-29706706" allowfullscreen frameborder="0" class="disco-embed"
+        src="https://themitro.disco.ac/e/p/29706706?download=false&s=X-eQ45lsJXUw47_Fw7oUC_PwDqQ%3ACJj8dtLy&artwork=true&color=%23FFFC52&theme=dark"
+        width="100%" height="560"></iframe>
 
-      <div class="widget-card">
-        <p class="widget-label">Playlist</p>
-        <iframe class="widget-embed"
-          src="https://open.spotify.com/embed/playlist/REPLACE_PLAYLIST_ID?utm_source=generator&theme=0"
-          height="450"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"></iframe>
-      </div>
+      <!-- EMOTIONAL -->
+      <iframe id="disco-playlist-29706741" name="disco-playlist-29706741" allowfullscreen frameborder="0" class="disco-embed"
+        src="https://themitro.disco.ac/e/p/29706741?download=false&s=9y8iZD_pwGmspn9geW-FgMBK5PE%3AhIx8YKJE&artwork=true&color=%23FFFC52&theme=dark"
+        width="100%" height="560"></iframe>
 
-      <!-- Добавляй виджеты по той же схеме -->
+      <!-- SOUNDTRACK -->
+      <iframe id="disco-playlist-29706794" name="disco-playlist-29706794" allowfullscreen frameborder="0" class="disco-embed"
+        src="https://themitro.disco.ac/e/p/29706794?download=false&s=ht-YpOq8nXiYIABajT9eQUrjHdg%3A4WqeLh8M&artwork=true&color=%23FFFC52&theme=dark"
+        width="100%" height="560"></iframe>
+
+      <!-- THRILLER -->
+      <iframe id="disco-playlist-29706851" name="disco-playlist-29706851" allowfullscreen frameborder="0" class="disco-embed"
+        src="https://themitro.disco.ac/e/p/29706851?download=false&s=TXjZkdmyWhYbLhCpvT9kxHMpNQ8%3AcpAqw6WM&artwork=true&color=%23FFFC52&theme=dark"
+        width="100%" height="560"></iframe>
 
     </div>
   </section>
