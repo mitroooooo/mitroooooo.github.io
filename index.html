@@ -258,20 +258,43 @@
       padding: 0 20px;
     }
 
-    /* active video state */
+    /* active video state — video fills the exact poster box */
     .work-item.playing { cursor: default; }
-    .work-item.playing .work-poster,
+    .work-item.playing .work-poster { visibility: hidden; }
     .work-item.playing .work-hover { display: none; }
 
     .work-item .work-embed {
       display: none;
+      position: absolute;
+      inset: 0;
       width: 100%;
-      aspect-ratio: 16 / 9;
+      height: 100%;
       border: 0;
       background: #000;
     }
 
     .work-item.playing .work-embed { display: block; }
+
+    /* close button */
+    .work-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 3;
+      transition: background 0.2s;
+    }
+    .work-close:hover { background: rgba(0,0,0,0.85); }
+    .work-close svg { width: 16px; height: 16px; stroke: #fff; stroke-width: 2.4; }
+    .work-item.playing .work-close { display: flex; }
 
     @media (max-width: 700px) {
       #section-work { padding-left: 0; padding-right: 0; padding-bottom: 40px; }
@@ -963,10 +986,22 @@
     mobileMenu.classList.remove('open');
   }
 
-  // Work: click poster -> swap to video
+  // Work: click poster -> swap to video (fills poster box)
+  function closeWorkItem(item) {
+    item.classList.remove('playing');
+    const f = item.querySelector('.work-embed');
+    if (f) f.remove();
+    const c = item.querySelector('.work-close');
+    if (c) c.remove();
+  }
+
   document.querySelectorAll('.work-item[data-video]').forEach(item => {
-    item.addEventListener('click', () => {
+    item.addEventListener('click', (e) => {
       if (item.classList.contains('playing')) return;
+      // close any other playing item
+      document.querySelectorAll('.work-item.playing').forEach(other => {
+        if (other !== item) closeWorkItem(other);
+      });
       const vid = item.getAttribute('data-video');
       const title = item.getAttribute('data-title') || '';
       const iframe = document.createElement('iframe');
@@ -977,6 +1012,13 @@
       iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
       iframe.setAttribute('allowfullscreen', '');
       item.appendChild(iframe);
+
+      const close = document.createElement('div');
+      close.className = 'work-close';
+      close.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>';
+      close.addEventListener('click', (ev) => { ev.stopPropagation(); closeWorkItem(item); });
+      item.appendChild(close);
+
       item.classList.add('playing');
     });
   });
