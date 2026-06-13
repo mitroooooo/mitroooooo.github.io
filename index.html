@@ -1833,8 +1833,8 @@
     work:        { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, blur: 0, fog: null   }, // as is
     listen:      { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 2, fog: 'dark' }, // stars + fog
     client:      { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 2, fog: 'dark' }, // stars + fog
-    selfaware1:  { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 2, fog: 'dark' }, // stars + fog (was video)
-    selfaware2:  { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 2, fog: 'dark' }, // stars + fog (was video)
+    selfaware1:  { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 0, fog: 'mist' }, // sharp stars + translucent mist
+    selfaware2:  { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 0, fog: 'mist' }, // sharp stars + translucent mist
     goldenghost: { img: 'BACKGROUNDGOLDENGHOST.png', dim: 0.00, blur: 0, fog: 'warm' }, // bright cover + matching fog
     galapogos:   { img: 'BACKGROUNDGALAPAGOS.jpg',   dim: 0.35, blur: 0, fog: null   }, // as is
     contact:     { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, blur: 0, fog: null   }  // stars only
@@ -1846,7 +1846,9 @@
     // dark: muted night-sky haze, translucent so the stars show through
     dark: { alpha: 0.5, opts: { highlightColor: 0x0c0c16, midtoneColor: 0x1a1a2e, lowlightColor: 0x2e2b45, baseColor: 0x000000, blurFactor: 0.60, speed: 0.25, zoom: 0.80 } },
     // warm: bright orange to match the Golden Ghost cover
-    warm: { alpha: 0.65, opts: { highlightColor: 0xffb23c, midtoneColor: 0xe35e12, lowlightColor: 0xb83a0c, baseColor: 0x000000, blurFactor: 0.55, speed: 0.30, zoom: 0.90 } }
+    warm: { alpha: 0.65, opts: { highlightColor: 0xffb23c, midtoneColor: 0xe35e12, lowlightColor: 0xb83a0c, baseColor: 0x000000, blurFactor: 0.55, speed: 0.30, zoom: 0.90 } },
+    // mist: light grey/lavender haze (Selfaware) — translucent so the starry sky shows through
+    mist: { alpha: 0.55, opts: { highlightColor: 0x20201f, midtoneColor: 0xe1d1d0, lowlightColor: 0xd1cee6, baseColor: 0xdecdcd, blurFactor: 0.51, speed: 1.60, zoom: 1.40 } }
   };
 
   let vantaEffect = null, vantaScriptsPromise = null, currentFog = null, pendingFog = null;
