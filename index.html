@@ -1250,20 +1250,36 @@
 
   const pageOrder = ['about','work','listen','selfaware1','selfaware2','goldenghost','galapogos','client','contact'];
 
-  function muteSection(sec) {
-    // pause via postMessage (works on Spotify & Disco without killing iframe)
+  function reloadIframes(sec) {
+    // physically recreate each iframe -> kills audio AND guarantees fresh load
     sec.querySelectorAll('iframe').forEach(f => {
-      try {
-        f.contentWindow.postMessage(JSON.stringify({method:'pause'}), '*');
-        f.contentWindow.postMessage('{"method":"pause"}', '*');
-      } catch(e) {}
+      const src = f.dataset.liveSrc || f.src;
+      if (!src || src === 'about:blank') return;
+      f.dataset.liveSrc = src;
+      const fresh = document.createElement('iframe');
+      Array.from(f.attributes).forEach(a => {
+        if (a.name !== 'src') fresh.setAttribute(a.name, a.value);
+      });
+      fresh.dataset.liveSrc = src;
+      f.parentNode.replaceChild(fresh, f);
+      // set src after it's in the (visible) DOM
+      requestAnimationFrame(() => { fresh.src = src; });
     });
-    // close any playing work videos
+  }
+
+  function muteSection(sec) {
+    // kill audio by blanking iframes (recreated when section is next opened)
+    sec.querySelectorAll('iframe').forEach(f => {
+      if (f.src && f.src !== 'about:blank') {
+        f.dataset.liveSrc = f.src;
+        f.src = 'about:blank';
+      }
+    });
     sec.querySelectorAll('.work-item.playing').forEach(item => closeWorkItem(item));
   }
 
   function restoreSection(sec) {
-    // iframes stay alive — nothing to restore
+    reloadIframes(sec);
   }
 
   function showSection(name, dir) {
@@ -1329,6 +1345,10 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
+    // remember each iframe's real src
+    document.querySelectorAll('iframe').forEach(f => {
+      if (f.src && f.src !== 'about:blank') f.dataset.liveSrc = f.src;
+    });
     const hash = window.location.hash.replace('#', '');
     if (hash && document.getElementById('section-' + hash)) {
       activateSection(hash);
