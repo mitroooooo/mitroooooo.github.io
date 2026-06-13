@@ -1581,7 +1581,9 @@
         // strip transform after the zoom so the iframe rests on the native pixel grid (no jitter)
         el.addEventListener('animationend', function handler(e) {
           if (e.animationName === 'playerZoomBlur') {
-            el.style.transform = 'none';
+            // settle on a no-op GPU layer (NOT 'none') so the iframe doesn't get demoted off its
+            // composite layer and repaint-snap on the last frame — that snap was the residual jitter
+            el.style.transform = 'translateZ(0)';
             el.style.opacity = '1';
             el.style.willChange = 'auto';
             el.removeEventListener('animationend', handler);
