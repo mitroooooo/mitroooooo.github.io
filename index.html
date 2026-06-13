@@ -483,8 +483,9 @@
     .form-send-btn.shake { animation: btnShake 0.5s ease; }
 
     .field-error {
-      border-color: #e5564e !important;
-      box-shadow: 0 0 0 1px #e5564e;
+      border-color: rgba(229, 86, 78, 0.8) !important;
+      background: rgba(229, 86, 78, 0.12) !important;
+      transition: background 0.3s, border-color 0.3s;
     }
 
     .form-thanks {
@@ -1242,7 +1243,7 @@
 
     <!-- Form -->
     <div class="contact-form-wrap">
-      <form class="contact-form" onsubmit="handleContactSubmit(event)">
+      <form class="contact-form" novalidate onsubmit="handleContactSubmit(event)">
 
         <div class="form-row">
           <div class="form-group">
@@ -1293,17 +1294,25 @@
     const form = e.target;
     const btn = form.querySelector('.form-send-btn');
 
-    // check validity — if invalid, shake the button + highlight empty fields
-    if (!form.checkValidity()) {
+    // validate ourselves (novalidate on form disables browser popups)
+    let hasError = false;
+    form.querySelectorAll('[required]').forEach(field => {
+      const empty = !field.value.trim();
+      // email field: also check basic format
+      const badEmail = field.type === 'email' && field.value.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(field.value.trim());
+      if (empty || badEmail) {
+        field.classList.add('field-error');
+        hasError = true;
+      } else {
+        field.classList.remove('field-error');
+      }
+    });
+
+    if (hasError) {
+      // always shake on any invalid submit, even repeated
       btn.classList.remove('shake');
       void btn.offsetWidth;
       btn.classList.add('shake');
-      // mark empty required fields
-      form.querySelectorAll('[required]').forEach(field => {
-        if (!field.value.trim()) field.classList.add('field-error');
-        else field.classList.remove('field-error');
-      });
-      form.reportValidity();
       return;
     }
 
