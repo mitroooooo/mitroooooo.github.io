@@ -268,12 +268,11 @@
 
     /* ── SECTIONS ── */
     section {
-      display: none;
+      display: block;
       min-height: calc(100vh - var(--nav-h));
       padding: 60px 40px 80px;
-      animation: fadeIn 0.35s ease;
+      scroll-margin-top: var(--nav-h);
     }
-    section.active { display: block; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
@@ -294,29 +293,34 @@
     .work-stagger {
       opacity: 0;
       transform: translateY(28px);
-      animation: workReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      animation-delay: var(--d, 0ms);
+      transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+      transition-delay: var(--d, 0ms);
+      will-change: opacity, transform;
     }
+    .work-stagger.in { opacity: 1; transform: translateY(0); }
 
-    @keyframes workReveal {
-      to { opacity: 1; transform: translateY(0); }
+    /* generic scroll fade-up for non-Work section blocks */
+    .reveal {
+      opacity: 0;
+      transform: translateY(34px);
+      transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+      transition-delay: var(--d, 0ms);
     }
+    .reveal.in { opacity: 1; transform: none; }
 
     @media (max-width: 700px) {
-      .work-stagger {
-        opacity: 0;
-        transform: translateY(36px) scale(0.96);
-        animation: workRevealMobile 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        animation-delay: var(--d, 0ms);
-      }
-      @keyframes workRevealMobile {
-        to { opacity: 1; transform: translateY(0) scale(1); }
-      }
+      .work-stagger { transform: translateY(36px) scale(0.96); }
+      .work-stagger.in { transform: translateY(0) scale(1); }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .work-stagger { animation: none; opacity: 1; transform: none; }
+      .work-stagger, .reveal { opacity: 1 !important; transform: none !important; transition: none; }
     }
+
+    /* one-page: no side paging UI */
+    .page-arrow { display: none !important; }
+    #nav-progress { display: none !important; }
+    html { scroll-padding-top: var(--nav-h); }
 
     #section-work {
       padding-left: 0;
@@ -343,6 +347,8 @@
       width: 100%;
       display: block;
       height: auto;
+      aspect-ratio: 16 / 9;   /* reserves space so posters don't jump when they finish loading */
+      object-fit: cover;
     }
 
     .work-item a { display: block; line-height: 0; }
@@ -1103,38 +1109,31 @@
       width: min(42vw, 260px);             /* 35% smaller than before */
       height: auto; display: block;
       mix-blend-mode: screen;              /* black vanishes, glow lays over the sky */
-      transform: scale(1);
+      transform: scale(0.86);
       will-change: transform, opacity;
-      animation: spherePush 2s ease-out forwards;   /* grows a bit over ~1.2s, then holds */
+      animation: spherePush 2s cubic-bezier(0.34, 1.25, 0.5, 1) forwards;  /* looms toward viewer with a little bounce */
     }
     @keyframes spherePush {
-      0%   { transform: scale(1); }
-      60%  { transform: scale(1.15); }      /* most of the growth lands by ~1.2s */
-      100% { transform: scale(1.18); }
+      0%   { transform: scale(0.86); }      /* starts smaller, in the distance */
+      55%  { transform: scale(1.16); }      /* looms forward */
+      72%  { transform: scale(1.05); }      /* bounce settle */
+      100% { transform: scale(1.10); }
     }
-    @keyframes sphereFly {                  /* grow-state -> recede smoothly into the distance (like the light sphere) */
-      from { transform: scale(1.18); opacity: 1; }
-      to   { transform: scale(0.12); opacity: 0; }
+    @keyframes sphereFly {                  /* tiny anticipation, then recede far away + fade out */
+      0%   { transform: scale(1.10); opacity: 1; }
+      16%  { transform: scale(1.20); opacity: 1; }
+      100% { transform: scale(0.06); opacity: 0; }
     }
     #intro.depart #intro-sphere {
-      animation: sphereFly 1.2s cubic-bezier(0.55, 0, 0.2, 1) forwards;
+      animation: sphereFly 1.0s cubic-bezier(0.5, 0, 0.72, 0) forwards;   /* accelerates away = into the distance */
     }
-    #intro.hide { opacity: 0; pointer-events: none; }   /* sky overlay clears -> Work shows */
+    #intro.hide { opacity: 0; pointer-events: none; }   /* sky overlay clears -> page shows */
     #intro.gone { display: none; }
     body.intro-lock { overflow: hidden; }
 
-    @keyframes introZoomIn {                /* scale only (no opacity) so Work never flashes on reveal */
-      from { transform: scale(0.96); }
-      to   { transform: scale(1); }
-    }
-    #section-work.intro-zoom {
-      animation: introZoomIn 1.0s cubic-bezier(0.22, 1, 0.36, 1) both;
-      transform-origin: 50% 40%;
-    }
     @media (prefers-reduced-motion: reduce) {
       #intro-sphere { animation: none; }
       #intro.depart #intro-sphere { animation: none; opacity: 0; transition: opacity 0.4s ease; }
-      #section-work.intro-zoom { animation: none; }
     }
   </style>
 </head><body>
@@ -1150,25 +1149,25 @@
 
 <!-- NAV -->
 <nav>
-  <span class="tm-logo nav-center-tm" role="button" aria-label="Work" tabindex="0" onclick="showSection('work')"></span>
-  <a href="#" class="nav-logo" onclick="showSection('about')"><span id="logo-text">THE MITRO</span></a>
+  <span class="tm-logo nav-center-tm" role="button" aria-label="Work" tabindex="0" onclick="goTo('work')"></span>
+  <a href="#" class="nav-logo" onclick="goTo('about')"><span id="logo-text">THE MITRO</span></a>
 
   <ul class="nav-links">
-    <li><a href="#" onclick="showSection('about')" id="nav-about">About</a></li>
-    <li><a href="#" onclick="showSection('work')" id="nav-work" class="active">Work</a></li>
-    <li><a href="#" onclick="showSection('listen')" id="nav-listen">Listen</a></li>
+    <li><a href="#" onclick="goTo('about')" id="nav-about">About</a></li>
+    <li><a href="#" onclick="goTo('work')" id="nav-work" class="active">Work</a></li>
+    <li><a href="#" onclick="goTo('listen')" id="nav-listen">Listen</a></li>
     <li class="nav-tm"><span class="tm-logo" role="button" aria-label="Work" tabindex="0" onclick="replayIntro()"></span></li>
     <li class="nav-dropdown">
       <a href="#" id="nav-solo" onclick="event.preventDefault()">Solo</a>
       <ul class="dropdown-menu">
-        <li><a href="#" onclick="showSection('selfaware1')">Selfaware Vol.1</a></li>
-        <li><a href="#" onclick="showSection('selfaware2')">Selfaware Vol.2</a></li>
-        <li><a href="#" onclick="showSection('goldenghost')">Golden Ghost</a></li>
-        <li><a href="#" onclick="showSection('galapogos')">Galapogos</a></li>
+        <li><a href="#" onclick="goTo('selfaware1')">Selfaware Vol.1</a></li>
+        <li><a href="#" onclick="goTo('selfaware2')">Selfaware Vol.2</a></li>
+        <li><a href="#" onclick="goTo('goldenghost')">Golden Ghost</a></li>
+        <li><a href="#" onclick="goTo('galapogos')">Galapogos</a></li>
       </ul>
     </li>
-    <li><a href="#" onclick="showSection('client')" id="nav-client">Client</a></li>
-    <li><a href="#" onclick="showSection('contact')" id="nav-contact">Contact</a></li>
+    <li><a href="#" onclick="goTo('client')" id="nav-client">Client</a></li>
+    <li><a href="#" onclick="goTo('contact')" id="nav-contact">Contact</a></li>
   </ul>
 
   <div class="nav-socials">
@@ -1193,18 +1192,18 @@
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobile-menu">
-  <a href="#" onclick="showSection('about');closeMobile()">About</a>
-  <a href="#" onclick="showSection('work');closeMobile()">Work</a>
-  <a href="#" onclick="showSection('listen');closeMobile()">Listen</a>
+  <a href="#" onclick="goTo('about');closeMobile()">About</a>
+  <a href="#" onclick="goTo('work');closeMobile()">Work</a>
+  <a href="#" onclick="goTo('listen');closeMobile()">Listen</a>
   <a href="#" onclick="event.preventDefault();document.getElementById('mobile-solo-sub').classList.toggle('open')">Solo ▾</a>
   <div class="mobile-submenu" id="mobile-solo-sub">
-    <a href="#" onclick="showSection('selfaware1');closeMobile()">Selfaware Vol.1</a>
-    <a href="#" onclick="showSection('selfaware2');closeMobile()">Selfaware Vol.2</a>
-    <a href="#" onclick="showSection('goldenghost');closeMobile()">Golden Ghost</a>
-    <a href="#" onclick="showSection('galapogos');closeMobile()">Galapogos</a>
+    <a href="#" onclick="goTo('selfaware1');closeMobile()">Selfaware Vol.1</a>
+    <a href="#" onclick="goTo('selfaware2');closeMobile()">Selfaware Vol.2</a>
+    <a href="#" onclick="goTo('goldenghost');closeMobile()">Golden Ghost</a>
+    <a href="#" onclick="goTo('galapogos');closeMobile()">Galapogos</a>
   </div>
-  <a href="#" onclick="showSection('client');closeMobile()">Client</a>
-  <a href="#" onclick="showSection('contact');closeMobile()">Contact</a>
+  <a href="#" onclick="goTo('client');closeMobile()">Client</a>
+  <a href="#" onclick="goTo('contact');closeMobile()">Contact</a>
   <div class="mobile-socials">
     <a href="https://instagram.com/dzmitrymus/" target="_blank" aria-label="Instagram">
       <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
@@ -1225,7 +1224,7 @@
       <p class="about-text">Dmitry Ivashchenko is a music composer and a restless explorer of new sounds.</p>
       <img class="about-photo" src="ME%20PHOTO.jpg" alt="Dmitry Ivashchenko" loading="lazy">
       <p class="about-text">He has worked on promo and trailer campaigns for studios including Universal, Sony, Disney, and A24 — and continues to bring his music and style to projects worldwide.</p>
-      <p class="about-text">In 2026 he launched his solo career, experimenting with his capabilities across various musical directions. Don't hesitate to check it out in the <a href="#" class="about-link" onclick="showSection('selfaware1')">SOLO</a> section.</p>
+      <p class="about-text">In 2026 he launched his solo career, experimenting with his capabilities across various musical directions. Don't hesitate to check it out in the <a href="#" class="about-link" onclick="goTo('selfaware1')">SOLO</a> section.</p>
     </div>
   </section>
 
@@ -1346,28 +1345,28 @@
       <div class="listen-col player-reveal">
         <p class="listen-label">BANGERS</p>
         <div class="player-frame"><iframe id="disco-playlist-29706706" name="disco-playlist-29706706" allowfullscreen frameborder="0" class="disco-embed"
-          src="https://themitro.disco.ac/e/p/29706706?download=false&s=X-eQ45lsJXUw47_Fw7oUC_PwDqQ%3ACJj8dtLy&artwork=true&color=%23FFFC52&theme=dark"
+          data-src="https://themitro.disco.ac/e/p/29706706?download=false&s=X-eQ45lsJXUw47_Fw7oUC_PwDqQ%3ACJj8dtLy&artwork=true&color=%23FFFC52&theme=dark"
           width="100%" height="820"></iframe><div class="player-mask"></div></div>
       </div>
 
       <div class="listen-col player-reveal">
         <p class="listen-label">EMOTIONAL/SLOWBURN</p>
         <div class="player-frame"><iframe id="disco-playlist-29706741" name="disco-playlist-29706741" allowfullscreen frameborder="0" class="disco-embed"
-          src="https://themitro.disco.ac/e/p/29706741?download=false&s=9y8iZD_pwGmspn9geW-FgMBK5PE%3AhIx8YKJE&artwork=true&color=%23FFFC52&theme=dark"
+          data-src="https://themitro.disco.ac/e/p/29706741?download=false&s=9y8iZD_pwGmspn9geW-FgMBK5PE%3AhIx8YKJE&artwork=true&color=%23FFFC52&theme=dark"
           width="100%" height="820"></iframe><div class="player-mask"></div></div>
       </div>
 
       <div class="listen-col player-reveal">
         <p class="listen-label">SOUNDTRACK</p>
         <div class="player-frame"><iframe id="disco-playlist-29706794" name="disco-playlist-29706794" allowfullscreen frameborder="0" class="disco-embed"
-          src="https://themitro.disco.ac/e/p/29706794?download=false&s=ht-YpOq8nXiYIABajT9eQUrjHdg%3A4WqeLh8M&artwork=true&color=%23FFFC52&theme=dark"
+          data-src="https://themitro.disco.ac/e/p/29706794?download=false&s=ht-YpOq8nXiYIABajT9eQUrjHdg%3A4WqeLh8M&artwork=true&color=%23FFFC52&theme=dark"
           width="100%" height="820"></iframe><div class="player-mask"></div></div>
       </div>
 
       <div class="listen-col player-reveal">
         <p class="listen-label">THRILLER/ACTION</p>
         <div class="player-frame"><iframe id="disco-playlist-29706851" name="disco-playlist-29706851" allowfullscreen frameborder="0" class="disco-embed"
-          src="https://themitro.disco.ac/e/p/29706851?download=false&s=TXjZkdmyWhYbLhCpvT9kxHMpNQ8%3AcpAqw6WM&artwork=true&color=%23FFFC52&theme=dark"
+          data-src="https://themitro.disco.ac/e/p/29706851?download=false&s=TXjZkdmyWhYbLhCpvT9kxHMpNQ8%3AcpAqw6WM&artwork=true&color=%23FFFC52&theme=dark"
           width="100%" height="820"></iframe><div class="player-mask"></div></div>
       </div>
 
@@ -1380,13 +1379,13 @@
       <h1 class="section-title">Selfaware Vol.1</h1>
       <div class="album-widget player-reveal">
         <iframe class="widget-embed"
-          src="https://open.spotify.com/embed/album/37Z7uurE3tatN1uN7FCCLn?utm_source=generator"
+          data-src="https://open.spotify.com/embed/album/37Z7uurE3tatN1uN7FCCLn?utm_source=generator"
           height="450"
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy"></iframe><div class="player-mask"></div>
       </div>
       <div class="client-access-row">
-        <a href="#" class="client-access-btn" onclick="showSection('client')">Client Access</a>
+        <a href="#" class="client-access-btn" onclick="goTo('client')">Client Access</a>
       </div>
     </div>
   </section>
@@ -1396,13 +1395,13 @@
       <h1 class="section-title">Selfaware Vol.2</h1>
       <div class="album-widget player-reveal">
         <iframe class="widget-embed"
-          src="https://open.spotify.com/embed/album/5uFplXwzROvW8RI34xOVTb?utm_source=generator"
+          data-src="https://open.spotify.com/embed/album/5uFplXwzROvW8RI34xOVTb?utm_source=generator"
           height="450"
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy"></iframe><div class="player-mask"></div>
       </div>
       <div class="client-access-row">
-        <a href="#" class="client-access-btn" onclick="showSection('client')">Client Access</a>
+        <a href="#" class="client-access-btn" onclick="goTo('client')">Client Access</a>
       </div>
     </div>
   </section>
@@ -1412,13 +1411,13 @@
       <h1 class="section-title">Golden Ghost</h1>
       <div class="album-widget player-reveal">
         <iframe class="widget-embed"
-          src="https://open.spotify.com/embed/track/30hMjQO2UAvaSaBHLT5Wjc?utm_source=generator"
+          data-src="https://open.spotify.com/embed/track/30hMjQO2UAvaSaBHLT5Wjc?utm_source=generator"
           height="352"
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy"></iframe><div class="player-mask"></div>
       </div>
       <div class="client-access-row">
-        <a href="#" class="client-access-btn" onclick="showSection('client')">Client Access</a>
+        <a href="#" class="client-access-btn" onclick="goTo('client')">Client Access</a>
       </div>
     </div>
   </section>
@@ -1428,13 +1427,13 @@
       <h1 class="section-title">Galapogos</h1>
       <div class="album-widget player-reveal">
         <iframe class="widget-embed"
-          src="https://open.spotify.com/embed/track/2mZ38p3aG35hcMChNjjx2e?utm_source=generator"
+          data-src="https://open.spotify.com/embed/track/2mZ38p3aG35hcMChNjjx2e?utm_source=generator"
           height="352"
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy"></iframe><div class="player-mask"></div>
       </div>
       <div class="client-access-row">
-        <a href="#" class="client-access-btn" onclick="showSection('client')">Client Access</a>
+        <a href="#" class="client-access-btn" onclick="goTo('client')">Client Access</a>
       </div>
     </div>
   </section>
@@ -1450,7 +1449,7 @@
     <p class="client-intro">Listen and download tracks &amp; stems below.<br>For licensing inquiries, use the contact form.</p>
     <div class="client-embed-wrap player-reveal">
       <iframe id="disco-playlist-29705222" name="disco-playlist-29705222" allowfullscreen frameborder="0" class="disco-embed"
-        src="https://themitro.disco.ac/e/p/29705222?download=false&s=BiW6oW0xQzbfhVvN9FOJCbFwg1g%3ARQuJC97E&artwork=true&color=%23FFFC52&theme=dark"
+        data-src="https://themitro.disco.ac/e/p/29705222?download=false&s=BiW6oW0xQzbfhVvN9FOJCbFwg1g%3ARQuJC97E&artwork=true&color=%23FFFC52&theme=dark"
         width="100%" height="480"></iframe><div class="player-mask"></div>
     </div>
     -->
@@ -1577,131 +1576,102 @@
     }
   });
 
-  const pageOrder = ['about','work','listen','selfaware1','selfaware2','goldenghost','galapogos','client','contact'];
+  // ───────── ONE-PAGE NAVIGATION · SCROLL REVEAL · LAZY PLAYERS ─────────
+  const SECTION_ORDER = ['about','work','listen','selfaware1','selfaware2','goldenghost','galapogos','client','contact'];
+  const SOLO_PAGES = ['selfaware1','selfaware2','goldenghost','galapogos'];
+  let listenPlayersRevealed = false;
+  let currentSection = null;
 
-  function reloadIframes(sec) {
-    // physically recreate each iframe -> kills audio AND guarantees fresh load
-    sec.querySelectorAll('iframe').forEach(f => {
-      const src = f.dataset.liveSrc || f.src;
-      if (!src || src === 'about:blank') return;
-      f.dataset.liveSrc = src;
-      const fresh = document.createElement('iframe');
-      Array.from(f.attributes).forEach(a => {
-        if (a.name !== 'src') fresh.setAttribute(a.name, a.value);
-      });
-      fresh.dataset.liveSrc = src;
-      f.parentNode.replaceChild(fresh, f);
-      // set src after it's in the (visible) DOM
-      requestAnimationFrame(() => { fresh.src = src; });
-    });
+  function navH() { const n = document.querySelector('nav'); return n ? n.offsetHeight : 64; }
+  function eachSection(fn) {
+    SECTION_ORDER.forEach(n => { const s = document.getElementById('section-' + n); if (s) fn(s, n); });
   }
 
-  function muteSection(sec) {
-    // kill audio by blanking iframes (recreated when section is next opened)
-    sec.querySelectorAll('iframe').forEach(f => {
-      if (f.src && f.src !== 'about:blank') {
-        f.dataset.liveSrc = f.src;
-        f.src = 'about:blank';
-      }
-    });
-    sec.querySelectorAll('.work-item.playing').forEach(item => closeWorkItem(item));
-  }
-
-  function restoreSection(sec) {
-    reloadIframes(sec);
-  }
-
-  function showSection(name, dir) {
+  // smooth-scroll to a section (nav clicks). On window so inline onclicks resolve.
+  window.goTo = function (name) {
     if (typeof event !== 'undefined' && event) event.preventDefault();
-    const target = document.getElementById('section-' + name);
-    if (!target) return;
-    const current = document.querySelector('section.active');
-    if (current === target) return;
+    const el = document.getElementById('section-' + name);
+    if (!el) return;
+    if (typeof closeMobile === 'function') closeMobile();
+    const y = el.getBoundingClientRect().top + window.scrollY - navH();
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+  };
+  window.showSection = function (name) { window.goTo(name); };  // back-compat
+  window.navigatePage = function () {};                          // arrows removed (no-op)
 
-    // determine slide direction if not given
-    if (!dir && current) {
-      const from = pageOrder.indexOf(current.id.replace('section-',''));
-      const to = pageOrder.indexOf(name);
-      dir = (to > from) ? 'right' : 'left';
-    }
-
-    if (current) muteSection(current);
-    history.replaceState(null, '', '#' + name);
-    activateSection(name);
-    restoreSection(target);
-
-    // slide-in animation
-    target.classList.remove('slide-from-right', 'slide-from-left');
-    void target.offsetWidth; // reflow to restart animation
-    target.classList.add(dir === 'left' ? 'slide-from-left' : 'slide-from-right');
-
-    // reset logos reveal so it can replay
-    if (name === 'work') {
-      const lr = document.querySelector('.studio-logos');
-      if (lr) { lr.classList.remove('revealed'); observeLogos(); }
-    }
-    updateArrows(name);
-  }
-
-  function navigatePage(step) {
-    const current = document.querySelector('section.active');
-    if (!current) return;
-    const idx = pageOrder.indexOf(current.id.replace('section-',''));
-    const next = idx + step;
-    if (next < 0 || next >= pageOrder.length) return;
-    showSection(pageOrder[next], step > 0 ? 'right' : 'left');
-  }
-
-  function updateArrows(name) {
-    const idx = pageOrder.indexOf(name);
-    const left = document.querySelector('.page-arrow.left');
-    const right = document.querySelector('.page-arrow.right');
-    if (left) left.style.display = idx <= 0 ? 'none' : 'flex';
-    if (right) right.style.display = idx >= pageOrder.length - 1 ? 'none' : 'flex';
-  }
-
-  function activateSection(name) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  function setNavActive(name) {
     document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-    const target = document.getElementById('section-' + name);
-    if (!target) return;
-    target.classList.add('active');
-    const soloPages = ['selfaware1', 'selfaware2', 'goldenghost', 'galapogos'];
-    const navLink = document.getElementById(soloPages.includes(name) ? 'nav-solo' : 'nav-' + name);
-    if (navLink) navLink.classList.add('active');
-    window.scrollTo(0, 0);
-    updateArrows(name);
-
-    // replay the staggered reveal each time Work opens
-    if (name === 'work') {
-      target.querySelectorAll('.work-stagger').forEach(el => {
-        el.style.animation = 'none';
-        void el.offsetWidth;
-        el.style.animation = '';
-      });
-    }
-
-    // re-arm player zoom-blur reveal for player sections
-    if (typeof rearmPlayers === 'function') rearmPlayers(name);
-
-    // set the section's background image + fog
-    if (typeof applySectionBackground === 'function') applySectionBackground(name);
+    const link = document.getElementById(SOLO_PAGES.includes(name) ? 'nav-solo' : 'nav-' + name);
+    if (link) link.classList.add('active');
   }
+
+  function revealSection(name) {
+    const sec = document.getElementById('section-' + name);
+    if (!sec) return;
+    sec.querySelectorAll('.work-stagger, .reveal').forEach(el => el.classList.add('in'));
+  }
+
+  // lazy-load a section's players once, arming their zoom-fade reveal
+  function loadSectionPlayers(sec) {
+    if (!sec || sec.dataset.playersLoaded) return;
+    const frames = sec.querySelectorAll('iframe[data-src]');
+    if (!frames.length) return;
+    sec.dataset.playersLoaded = '1';
+    if (typeof revealPlayersIn === 'function') revealPlayersIn(sec);  // arm hidden + load listeners
+    frames.forEach(f => { const src = f.dataset.src; requestAnimationFrame(() => { f.src = src; }); });
+  }
+
+  // tag non-Work blocks for a gentle scroll fade-up (Work keeps its own per-item stagger)
+  function tagReveals() {
+    eachSection((sec, name) => {
+      if (name === 'work') return;
+      Array.from(sec.children).forEach((child, i) => {
+        if (child.classList.contains('player-reveal') || child.querySelector('.player-reveal')) return;
+        child.classList.add('reveal');
+        child.style.setProperty('--d', (i * 110) + 'ms');
+      });
+    });
+  }
+
+  function setCurrent(name) {
+    if (name === currentSection) return;
+    currentSection = name;
+    setNavActive(name);
+    if (typeof applySectionBackground === 'function') applySectionBackground(name);
+    try { history.replaceState(null, '', '#' + name); } catch (e) {}
+  }
+
+  function initObservers() {
+    // centre band -> the "current" section (drives background + nav highlight)
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) setCurrent(e.target.id.replace('section-', '')); });
+    }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
+    // a bit before entering -> reveal content + lazy-load players
+    const early = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { revealSection(e.target.id.replace('section-', '')); loadSectionPlayers(e.target); }
+      });
+    }, { rootMargin: '300px 0px 300px 0px', threshold: 0 });
+    eachSection(sec => { spy.observe(sec); early.observe(sec); });
+  }
+
+  // used by the intro to land on + reveal a target section behind the overlay
+  window.__introLand = function (name) {
+    const el = document.getElementById('section-' + name);
+    if (el) { const y = el.getBoundingClientRect().top + window.scrollY - navH(); window.scrollTo(0, Math.max(0, y)); }
+    setCurrent(name);
+    revealSection(name);
+  };
 
   window.addEventListener('DOMContentLoaded', () => {
-    // remember each iframe's real src
-    document.querySelectorAll('iframe').forEach(f => {
-      if (f.src && f.src !== 'about:blank') f.dataset.liveSrc = f.src;
-    });
+    tagReveals();
+    initObservers();
     const hash = window.location.hash.replace('#', '');
     if (hash && document.getElementById('section-' + hash)) {
-      activateSection(hash);
+      requestAnimationFrame(() => window.__introLand(hash));   // deep link: jump there (intro is skipped)
     } else {
-      // no hash: apply background for whichever section is active by default
-      const active = document.querySelector('section.active');
-      if (active && typeof applySectionBackground === 'function') {
-        applySectionBackground(active.id.replace('section-', ''));
-      }
+      setCurrent('about');
+      revealSection('about');
     }
   });
 
@@ -1738,24 +1708,22 @@
       });
     }
 
-    function startSequence(spinMs) {
+    function startSequence(spinMs, target) {
       const intro = document.getElementById('intro');
       if (!intro) return;
       const sph = document.getElementById('intro-sphere');
-      const work = document.getElementById('section-work');
       document.body.classList.add('intro-lock');
       let done = false;
       function reveal(skipped) {
         if (done) return; done = true; currentReveal = null;
         if (skipped) stopSound();                       // bailed early -> cut the sound
-        intro.classList.add('depart');                  // the "пумс": sphere launches into the distance
-        setTimeout(() => {                              // ~2s mark: Work + posters fly out, sky overlay clears
+        intro.classList.add('depart');                  // sphere recedes into the distance
+        setTimeout(() => {                              // ~2s mark: land on target, reveal it, clear the sky
           intro.classList.add('hide');
-          if (work) { work.classList.add('intro-zoom'); replayStagger(work); }
+          if (typeof window.__introLand === 'function') window.__introLand(target || 'about');
         }, 100);
         setTimeout(() => {
           intro.classList.add('gone');
-          if (work) work.classList.remove('intro-zoom');
           document.body.classList.remove('intro-lock');
           try { sessionStorage.setItem('tm_intro', '1'); } catch (e) {}
         }, 1500);
@@ -1764,7 +1732,7 @@
       let armed = false;
       function arm() {
         if (armed) return; armed = true;
-        playRandomSound();                              // start sound + the 2s clock together so the hit lands on the boom
+        playRandomSound();                              // start sound + the 2s clock together so the hit lands on the recede
         setTimeout(() => reveal(false), spinMs);
       }
       if (sph && sph.complete && sph.naturalWidth) arm();
@@ -1773,24 +1741,23 @@
       setTimeout(() => reveal(false), spinMs + 4000);   // hard safety: never trap on the overlay
     }
 
-    // Replay on demand (desktop THE MITRO logo): re-show the overlay over a fresh Work page.
+    // Replay on demand (desktop THE MITRO logo): re-show the overlay, then land on Work.
     window.replayIntro = function () {
       const intro = document.getElementById('intro');
-      if (!intro) { if (typeof showSection === 'function') showSection('work'); return; }
-      if (typeof activateSection === 'function') activateSection('work');
+      if (!intro) { window.goTo('work'); return; }
       const sph = document.getElementById('intro-sphere');
       if (sph) sph.style.animation = 'none';            // reset the sphere motion
       intro.classList.remove('depart', 'hide', 'gone');
       intro.style.display = '';
       void intro.offsetWidth;
-      if (sph) sph.style.animation = '';                // restart the forward-drift animation cleanly
-      startSequence(SPIN_MS);
+      if (sph) sph.style.animation = '';                // restart the loom animation cleanly
+      startSequence(SPIN_MS, 'work');
     };
 
     window.addEventListener('DOMContentLoaded', () => {
       const intro = document.getElementById('intro');
       if (intro) intro.addEventListener('click', () => { if (currentReveal) currentReveal(true); }); // tap to skip
-      if (intro && getComputedStyle(intro).display !== 'none') startSequence(SPIN_MS);               // entry run
+      if (intro && getComputedStyle(intro).display !== 'none') startSequence(SPIN_MS, 'about');       // entry -> land on About (top)
     });
   })();
 
@@ -1846,6 +1813,15 @@
       const reveal = () => {
         if (done) return; done = true;
         el.classList.add('revealed');
+        // Listen: blur the night sky once its Disco players have dropped in
+        const sec = el.closest('section');
+        if (sec && sec.id === 'section-listen') {
+          listenPlayersRevealed = true;
+          if (currentSection === 'listen') {
+            const bg = document.getElementById('bg-layer');
+            if (bg) bg.style.filter = 'blur(1.5px)';
+          }
+        }
         // strip transform after the zoom so the iframe rests on the native pixel grid (no jitter)
         el.addEventListener('animationend', function handler(e) {
           if (e.animationName === 'playerZoomBlur') {
@@ -1879,15 +1855,15 @@
      One fixed image layer (#bg-layer) + one fog layer (#vanta-fog) behind all content.
      Fog colours/strength are tunable below — grab values from vantajs.com and paste the hex in. */
   const SECTION_BG = {
-    about:       { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, blur: 0, fog: null   }, // stars only
-    work:        { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, blur: 0, fog: null   }, // as is
-    listen:      { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 2, fog: 'dark' }, // stars + fog
-    client:      { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 2, fog: 'dark' }, // stars + fog
-    selfaware1:  { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 0, fog: 'mist' }, // sharp stars + translucent mist
-    selfaware2:  { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 0, fog: 'mist' }, // sharp stars + translucent mist
-    goldenghost: { img: 'BACKGROUNDGOLDENGHOST.png', dim: 0.00, blur: 0, fog: 'warm' }, // bright cover + matching fog
-    galapogos:   { img: 'BACKGROUNDGALAPAGOS.jpg',   dim: 0.35, blur: 0, fog: null   }, // as is
-    contact:     { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, blur: 0, fog: null   }  // stars only
+    about:       { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, blur: 0, fog: null }, // stars only
+    work:        { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, blur: 0, fog: null },
+    listen:      { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 0, fog: null }, // sharp; blurs when Disco players drop in
+    client:      { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 0, fog: null },
+    selfaware1:  { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 0, fog: null },
+    selfaware2:  { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.30, blur: 0, fog: null },
+    goldenghost: { img: 'BACKGROUNDGOLDENGHOST.png', dim: 0.00, blur: 0, fog: null }, // bright cover
+    galapogos:   { img: 'BACKGROUNDGALAPAGOS.jpg',   dim: 0.35, blur: 0, fog: null },
+    contact:     { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, blur: 0, fog: null }
   };
 
   // Fog presets. `alpha` = overall fog opacity (lower = background shows through more).
@@ -1962,20 +1938,15 @@
     if (bgEl && cfg) {
       bgEl.style.backgroundImage = "url('" + cfg.img + "')";
       bgEl.style.setProperty('--bg-dim', cfg.dim);
-      bgEl.style.filter = cfg.blur ? 'blur(' + cfg.blur + 'px)' : 'none';
+      let blur = cfg.blur;
+      if (name === 'listen' && listenPlayersRevealed) blur = 1.5;  // sky blurs once the Disco players are in
+      bgEl.style.filter = blur ? 'blur(' + blur + 'px)' : 'none';
     }
-    applyFog(cfg ? cfg.fog : null);
-    updateProgress(name);
+    applyFog(null);   // fog disabled everywhere (code kept for easy re-enable)
   }
 
-  // carousel-style progress bar fill based on position in pageOrder
-  function updateProgress(name) {
-    const fill = document.getElementById('nav-progress-fill');
-    if (!fill) return;
-    const idx = pageOrder.indexOf(name);
-    if (idx < 0) return;
-    fill.style.width = (((idx + 1) / pageOrder.length) * 100) + '%';
-  }
+  // (progress bar removed with side-paging; kept harmless)
+  function updateProgress() {}
 
 
   // Work: click poster -> swap to video (fills poster box)
