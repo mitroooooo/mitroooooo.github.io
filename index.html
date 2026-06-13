@@ -859,23 +859,9 @@
       99%  { transform: translateZ(0) scale(1.0008); }
       100% { opacity: 1; transform: translateZ(0) scale(1); }
     }
-    /* frosted veil sits over the player while its iframe loads, then JS lifts it (no "pop") */
+    /* players stay hidden until their iframe has loaded, then zoom-fade in (see revealPlayersIn) */
     .player-frame { position: relative; border-radius: 10px; overflow: hidden; }
-    .player-mask {
-      position: absolute;
-      inset: 0;
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      background: rgba(13,13,18,0.5);
-      opacity: 1;
-      pointer-events: none;
-      border-radius: inherit;
-      z-index: 2;
-    }
-    .player-mask.cleared {
-      opacity: 0;
-      transition: opacity 0.6s ease;
-    }
+    .player-mask { display: none; } /* frosted veil retired — backdrop-filter lagged over the Solo video bg */
     @media (prefers-reduced-motion: reduce) {
       .player-reveal { opacity: 1; transform: none; }
       .player-reveal.revealed { animation: none; }
@@ -1570,8 +1556,8 @@
   }
   observeLogos();
 
-  // Players: zoom-blur cascade reveal. The frosted veil stays over each player
-  // until ITS iframe actually finishes loading, then lifts — so players never "pop" in.
+  // Players: keep each one hidden until ITS iframe has actually loaded, then zoom-fade it in.
+  // No backdrop-filter veil — that was what lagged over the Solo video background.
   function revealPlayersIn(scope) {
     const root = scope || document;
     const players = Array.from(root.querySelectorAll('.player-reveal'));
@@ -1579,37 +1565,34 @@
     players.forEach((el) => {
       const siblings = Array.from(el.parentElement.querySelectorAll(':scope > .player-reveal'));
       const idx = Math.max(0, siblings.indexOf(el));
-      el.style.setProperty('--pd', (idx * 180) + 'ms');
-      // reset any settled state from a previous visit
+      el.style.setProperty('--pd', (idx * 150) + 'ms');
+      // reset to the hidden "from" state and keep it hidden until the content is ready
       el.style.transform = '';
       el.style.opacity = '';
       el.style.willChange = 'opacity, transform';
       el.classList.remove('revealed');
-      // re-cover the player with the frosted veil before re-arming
-      const mask = el.querySelector('.player-mask');
-      if (mask) mask.classList.remove('cleared');
       void el.offsetWidth;
-      el.classList.add('revealed');
-      // when zoom finishes, strip transform so iframe rests on native pixel grid (no jitter)
-      el.addEventListener('animationend', function handler(e) {
-        if (e.animationName === 'playerZoomBlur') {
-          el.style.transform = 'none';
-          el.style.opacity = '1';
-          el.style.willChange = 'auto';
-          el.removeEventListener('animationend', handler);
-        }
-      });
-      // lift the veil only once the player content is genuinely loaded
-      if (mask) {
-        const iframe = el.querySelector('iframe');
-        let done = false;
-        const lift = () => { if (done) return; done = true; mask.classList.add('cleared'); };
-        if (iframe) {
-          iframe.addEventListener('load', lift, { once: true });
-          setTimeout(lift, 3000); // safety net if load already fired or stalls
-        } else {
-          lift();
-        }
+
+      const iframe = el.querySelector('iframe');
+      let done = false;
+      const reveal = () => {
+        if (done) return; done = true;
+        el.classList.add('revealed');
+        // strip transform after the zoom so the iframe rests on the native pixel grid (no jitter)
+        el.addEventListener('animationend', function handler(e) {
+          if (e.animationName === 'playerZoomBlur') {
+            el.style.transform = 'none';
+            el.style.opacity = '1';
+            el.style.willChange = 'auto';
+            el.removeEventListener('animationend', handler);
+          }
+        });
+      };
+      if (iframe) {
+        iframe.addEventListener('load', reveal, { once: true });
+        setTimeout(reveal, 3000); // safety net if load already fired or stalls
+      } else {
+        reveal();
       }
     });
   }
