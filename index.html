@@ -70,11 +70,11 @@
     .nav-tm img:hover { opacity: 1; transform: scale(1.08); }
 
     .mobile-tm-logo {
-      height: 48px;
+      display: none;
+      height: 30px;
       width: auto;
-      margin-bottom: 8px;
+      margin-left: 12px;
       opacity: 0.9;
-      cursor: pointer;
     }
 
     .nav-links {
@@ -852,6 +852,7 @@
     @media (max-width: 700px) {
       nav { padding: 0 20px; }
       .nav-links, .nav-socials { display: none; }
+      .mobile-tm-logo { display: inline-block; }
       .hamburger { display: flex; }
       section { padding: 40px 20px 60px; }
       footer { padding: 24px 20px; }
@@ -863,7 +864,7 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo" onclick="showSection('about')">THE MITRO</a>
+  <a href="#" class="nav-logo" onclick="showSection('about')">THE MITRO<img src="TM_LOGO.png" alt="" class="mobile-tm-logo"></a>
 
   <ul class="nav-links">
     <li><a href="#" onclick="showSection('about')" id="nav-about">About</a></li>
@@ -902,7 +903,6 @@
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobile-menu">
-  <img src="TM_LOGO.png" alt="TM" class="mobile-tm-logo" onclick="showSection('about');closeMobile()">
   <a href="#" onclick="showSection('about');closeMobile()">About</a>
   <a href="#" onclick="showSection('work');closeMobile()">Work</a>
   <a href="#" onclick="showSection('listen');closeMobile()">Listen</a>
