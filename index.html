@@ -1251,28 +1251,19 @@
   const pageOrder = ['about','work','listen','selfaware1','selfaware2','goldenghost','galapogos','client','contact'];
 
   function muteSection(sec) {
+    // pause via postMessage (works on Spotify & Disco without killing iframe)
     sec.querySelectorAll('iframe').forEach(f => {
-      const src = f.src || f.dataset.originalSrc;
-      if (src) { f.dataset.originalSrc = src; f.src = 'about:blank'; }
+      try {
+        f.contentWindow.postMessage(JSON.stringify({method:'pause'}), '*');
+        f.contentWindow.postMessage('{"method":"pause"}', '*');
+      } catch(e) {}
     });
+    // close any playing work videos
     sec.querySelectorAll('.work-item.playing').forEach(item => closeWorkItem(item));
   }
 
   function restoreSection(sec) {
-    // slight delay so section is display:block before iframe loads
-    setTimeout(() => {
-      sec.querySelectorAll('iframe').forEach(f => {
-        const orig = f.dataset.originalSrc;
-        if (orig && (f.src === '' || f.src === 'about:blank' || f.src.endsWith('about:blank'))) {
-          const fresh = document.createElement('iframe');
-          // copy all attributes
-          Array.from(f.attributes).forEach(a => fresh.setAttribute(a.name, a.value));
-          fresh.src = orig;
-          fresh.dataset.originalSrc = orig;
-          f.parentNode.replaceChild(fresh, f);
-        }
-      });
-    }, 80);
+    // iframes stay alive — nothing to restore
   }
 
   function showSection(name, dir) {
@@ -1338,10 +1329,6 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    // cache original src on every iframe so restoreSection always has reference
-    document.querySelectorAll('iframe').forEach(f => {
-      if (f.src) f.dataset.originalSrc = f.src;
-    });
     const hash = window.location.hash.replace('#', '');
     if (hash && document.getElementById('section-' + hash)) {
       activateSection(hash);
