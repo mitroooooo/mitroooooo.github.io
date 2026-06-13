@@ -1080,46 +1080,52 @@
     /* ── INTRO / start overlay ── */
     #intro {
       position: fixed; inset: 0; z-index: 10000;
-      background: #05060a url('BACKGROUNDSELFAWARE.jpg') center / cover no-repeat;  /* night sky */
+      background: #000;
       isolation: isolate;                 /* keep the screen-blend contained to the overlay */
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
       opacity: 1;
       transition: opacity 0.6s ease;
     }
-    #intro::after {                        /* subtle darkening so the glow pops over the stars */
+    /* night sky — rendered identically to #bg-layer (same scale + dim) so the stars
+       don't shift or flash when the overlay clears and the real background is revealed */
+    #intro .intro-sky {
+      position: absolute; inset: 0; z-index: 0;
+      background: #000 url('BACKGROUNDSELFAWARE.jpg') center / cover no-repeat;
+      transform: scale(1.06);
+    }
+    #intro .intro-sky::after {
       content: ''; position: absolute; inset: 0;
-      background: radial-gradient(circle at 50% 46%, rgba(5,6,10,0) 30%, rgba(5,6,10,0.55) 100%);
-      pointer-events: none;
+      background: rgba(0,0,0,0.45);        /* matches Work's --bg-dim */
     }
     #intro-sphere {
       position: relative; z-index: 1;
-      width: min(64vw, 400px);
+      width: min(42vw, 260px);             /* 35% smaller than before */
       height: auto; display: block;
       mix-blend-mode: screen;              /* black vanishes, glow lays over the sky */
       transform: scale(1);
       will-change: transform, opacity;
-      animation: spherePush 2s ease-out forwards;   /* drifts slightly forward while it spins */
+      animation: spherePush 2s ease-out forwards;   /* grows a bit over ~1.2s, then holds */
     }
-    @keyframes spherePush {                /* slow approach toward the viewer */
-      from { transform: scale(1); }
-      to   { transform: scale(1.08); }
+    @keyframes spherePush {
+      0%   { transform: scale(1); }
+      60%  { transform: scale(1.15); }      /* most of the growth lands by ~1.2s */
+      100% { transform: scale(1.18); }
     }
-    @keyframes sphereBoom {                /* the "пумс": pop forward, then launch into the distance */
-      0%   { transform: scale(1.08); opacity: 1; }
-      18%  { transform: scale(1.26); opacity: 1; }
-      100% { transform: scale(0.04); opacity: 0; }
+    @keyframes sphereFly {                  /* grow-state -> recede smoothly into the distance (like the light sphere) */
+      from { transform: scale(1.18); opacity: 1; }
+      to   { transform: scale(0.12); opacity: 0; }
     }
     #intro.depart #intro-sphere {
-      animation: sphereBoom 0.8s cubic-bezier(0.45, 0, 0.85, 0.35) forwards;
+      animation: sphereFly 1.2s cubic-bezier(0.55, 0, 0.2, 1) forwards;
     }
     #intro.hide { opacity: 0; pointer-events: none; }   /* sky overlay clears -> Work shows */
     #intro.gone { display: none; }
     body.intro-lock { overflow: hidden; }
 
-    @keyframes introZoomIn {
-      from { transform: scale(0.9); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
+    @keyframes introZoomIn {                /* scale only (no opacity) so Work never flashes on reveal */
+      from { transform: scale(0.96); }
+      to   { transform: scale(1); }
     }
     #section-work.intro-zoom {
       animation: introZoomIn 1.0s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -1134,7 +1140,7 @@
 </head><body>
 
 <!-- INTRO / start overlay: shown once on entry to themitro.com (never between internal navigations) -->
-<div id="intro" aria-hidden="true"><img id="intro-sphere" src="sphere.webp" alt=""></div>
+<div id="intro" aria-hidden="true"><div class="intro-sky"></div><img id="intro-sphere" src="sphere.webp" alt=""></div>
 <script>(function(){try{var skip=sessionStorage.getItem('tm_intro')||window.location.hash.replace('#','')||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);if(skip){var i=document.getElementById('intro');if(i)i.style.display='none';}}catch(e){}})();</script>
 
 <!-- global background system: image layer + animated fog layer, both behind all content -->
