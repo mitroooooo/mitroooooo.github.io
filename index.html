@@ -841,6 +841,25 @@
 
     .disco-embed { display: block; border: 0; }
 
+    /* player zoom-blur reveal */
+    .player-reveal {
+      opacity: 0;
+      filter: blur(14px);
+      transform: scale(1.12);
+      will-change: opacity, filter, transform;
+    }
+    .player-reveal.revealed {
+      animation: playerZoomBlur 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-delay: var(--pd, 0ms);
+    }
+    @keyframes playerZoomBlur {
+      to { opacity: 1; filter: blur(0px); transform: scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .player-reveal { opacity: 1; filter: none; transform: none; }
+      .player-reveal.revealed { animation: none; }
+    }
+
     .client-access-btn {
       display: inline-block;
       border: 1px solid rgba(255,255,255,0.45);
@@ -1155,28 +1174,28 @@
     <p class="listen-intro">to some music I've been working on recently</p>
     <div class="listen-grid">
 
-      <div class="listen-col">
+      <div class="listen-col player-reveal">
         <p class="listen-label">BANGERS</p>
         <iframe id="disco-playlist-29706706" name="disco-playlist-29706706" allowfullscreen frameborder="0" class="disco-embed"
           src="https://themitro.disco.ac/e/p/29706706?download=false&s=X-eQ45lsJXUw47_Fw7oUC_PwDqQ%3ACJj8dtLy&artwork=true&color=%23FFFC52&theme=dark"
           width="100%" height="820"></iframe>
       </div>
 
-      <div class="listen-col">
+      <div class="listen-col player-reveal">
         <p class="listen-label">EMOTIONAL</p>
         <iframe id="disco-playlist-29706741" name="disco-playlist-29706741" allowfullscreen frameborder="0" class="disco-embed"
           src="https://themitro.disco.ac/e/p/29706741?download=false&s=9y8iZD_pwGmspn9geW-FgMBK5PE%3AhIx8YKJE&artwork=true&color=%23FFFC52&theme=dark"
           width="100%" height="820"></iframe>
       </div>
 
-      <div class="listen-col">
+      <div class="listen-col player-reveal">
         <p class="listen-label">SOUNDTRACK</p>
         <iframe id="disco-playlist-29706794" name="disco-playlist-29706794" allowfullscreen frameborder="0" class="disco-embed"
           src="https://themitro.disco.ac/e/p/29706794?download=false&s=ht-YpOq8nXiYIABajT9eQUrjHdg%3A4WqeLh8M&artwork=true&color=%23FFFC52&theme=dark"
           width="100%" height="820"></iframe>
       </div>
 
-      <div class="listen-col">
+      <div class="listen-col player-reveal">
         <p class="listen-label">THRILLER</p>
         <iframe id="disco-playlist-29706851" name="disco-playlist-29706851" allowfullscreen frameborder="0" class="disco-embed"
           src="https://themitro.disco.ac/e/p/29706851?download=false&s=TXjZkdmyWhYbLhCpvT9kxHMpNQ8%3AcpAqw6WM&artwork=true&color=%23FFFC52&theme=dark"
@@ -1193,7 +1212,7 @@
     </video>
     <div class="album-page-inner">
       <h1 class="section-title">Selfaware Vol.1</h1>
-      <div class="album-widget">
+      <div class="album-widget player-reveal">
         <iframe class="widget-embed"
           src="https://open.spotify.com/embed/album/37Z7uurE3tatN1uN7FCCLn?utm_source=generator"
           height="450"
@@ -1212,7 +1231,7 @@
     </video>
     <div class="album-page-inner">
       <h1 class="section-title">Selfaware Vol.2</h1>
-      <div class="album-widget">
+      <div class="album-widget player-reveal">
         <iframe class="widget-embed"
           src="https://open.spotify.com/embed/album/5uFplXwzROvW8RI34xOVTb?utm_source=generator"
           height="450"
@@ -1225,7 +1244,7 @@
   <section id="section-goldenghost" class="album-page" style="background-image:url('BACKGROUNDGOLDENGHOST.png')">
     <div class="album-page-inner">
       <h1 class="section-title">Golden Ghost</h1>
-      <div class="album-widget">
+      <div class="album-widget player-reveal">
         <iframe class="widget-embed"
           src="https://open.spotify.com/embed/track/30hMjQO2UAvaSaBHLT5Wjc?utm_source=generator"
           height="352"
@@ -1238,7 +1257,7 @@
   <section id="section-galapogos" class="album-page" style="background-image:url('BACKGROUNDGALAPAGOS.jpg')">
     <div class="album-page-inner">
       <h1 class="section-title">Galapogos</h1>
-      <div class="album-widget">
+      <div class="album-widget player-reveal">
         <iframe class="widget-embed"
           src="https://open.spotify.com/embed/track/2mZ38p3aG35hcMChNjjx2e?utm_source=generator"
           height="352"
@@ -1252,7 +1271,7 @@
   <section id="section-client" class="bg-space">
     <h1 class="section-title">Client</h1>
     <p class="client-intro">Listen and download tracks &amp; stems below.<br>For licensing inquiries, use the contact form.</p>
-    <div class="client-embed-wrap">
+    <div class="client-embed-wrap player-reveal">
       <iframe id="disco-playlist-29705222" name="disco-playlist-29705222" allowfullscreen frameborder="0" class="disco-embed"
         src="https://themitro.disco.ac/e/p/29705222?download=false&s=BiW6oW0xQzbfhVvN9FOJCbFwg1g%3ARQuJC97E&artwork=true&color=%23FFFC52&theme=dark"
         width="100%" height="480"></iframe>
@@ -1483,6 +1502,9 @@
         el.style.animation = '';
       });
     }
+
+    // re-arm player zoom-blur reveal for player sections
+    if (typeof rearmPlayers === 'function') rearmPlayers(name);
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -1525,6 +1547,38 @@
     obs.observe(logosRow);
   }
   observeLogos();
+
+  // Players: zoom-blur cascade reveal when scrolled into view
+  function revealPlayersIn(scope) {
+    const players = (scope || document).querySelectorAll('.player-reveal');
+    if (!players.length) return;
+    // group by their parent section so cascade index resets per section
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const el = e.target;
+          // cascade index among siblings sharing same parent
+          const siblings = Array.from(el.parentElement.querySelectorAll(':scope > .player-reveal'));
+          const idx = Math.max(0, siblings.indexOf(el));
+          el.style.setProperty('--pd', (idx * 220) + 'ms');
+          el.classList.add('revealed');
+          obs.unobserve(el);
+        }
+      });
+    }, { threshold: 0.15 });
+    players.forEach(p => obs.observe(p));
+  }
+  revealPlayersIn(document);
+
+  // re-arm a section's players each time it's opened
+  function rearmPlayers(name) {
+    const sec = document.getElementById('section-' + name);
+    if (!sec) return;
+    const players = sec.querySelectorAll('.player-reveal');
+    players.forEach(p => { p.classList.remove('revealed'); p.style.removeProperty('--pd'); });
+    requestAnimationFrame(() => revealPlayersIn(sec));
+  }
+
 
   // Work: click poster -> swap to video (fills poster box)
   function closeWorkItem(item) {
