@@ -859,25 +859,22 @@
       99%  { transform: translateZ(0) scale(1.0008); }
       100% { opacity: 1; transform: translateZ(0) scale(1); }
     }
+    /* frosted veil sits over the player while its iframe loads, then JS lifts it (no "pop") */
+    .player-frame { position: relative; border-radius: 10px; overflow: hidden; }
     .player-mask {
       position: absolute;
       inset: 0;
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      background: rgba(13,13,18,0.32);
-      opacity: 0;
+      background: rgba(13,13,18,0.5);
+      opacity: 1;
       pointer-events: none;
       border-radius: inherit;
       z-index: 2;
     }
-    .player-reveal.revealed .player-mask {
-      animation: playerMaskOut 1s ease forwards;
-      animation-delay: var(--pd, 0ms);
-    }
-    @keyframes playerMaskOut {
-      0% { opacity: 1; }
-      85% { opacity: 0; }
-      100% { opacity: 0; }
+    .player-mask.cleared {
+      opacity: 0;
+      transition: opacity 0.6s ease;
     }
     @media (prefers-reduced-motion: reduce) {
       .player-reveal { opacity: 1; transform: none; }
@@ -1201,30 +1198,30 @@
 
       <div class="listen-col player-reveal">
         <p class="listen-label">BANGERS</p>
-        <iframe id="disco-playlist-29706706" name="disco-playlist-29706706" allowfullscreen frameborder="0" class="disco-embed"
+        <div class="player-frame"><iframe id="disco-playlist-29706706" name="disco-playlist-29706706" allowfullscreen frameborder="0" class="disco-embed"
           src="https://themitro.disco.ac/e/p/29706706?download=false&s=X-eQ45lsJXUw47_Fw7oUC_PwDqQ%3ACJj8dtLy&artwork=true&color=%23FFFC52&theme=dark"
-          width="100%" height="820"></iframe><div class="player-mask"></div>
+          width="100%" height="820"></iframe><div class="player-mask"></div></div>
       </div>
 
       <div class="listen-col player-reveal">
         <p class="listen-label">EMOTIONAL</p>
-        <iframe id="disco-playlist-29706741" name="disco-playlist-29706741" allowfullscreen frameborder="0" class="disco-embed"
+        <div class="player-frame"><iframe id="disco-playlist-29706741" name="disco-playlist-29706741" allowfullscreen frameborder="0" class="disco-embed"
           src="https://themitro.disco.ac/e/p/29706741?download=false&s=9y8iZD_pwGmspn9geW-FgMBK5PE%3AhIx8YKJE&artwork=true&color=%23FFFC52&theme=dark"
-          width="100%" height="820"></iframe><div class="player-mask"></div>
+          width="100%" height="820"></iframe><div class="player-mask"></div></div>
       </div>
 
       <div class="listen-col player-reveal">
         <p class="listen-label">SOUNDTRACK</p>
-        <iframe id="disco-playlist-29706794" name="disco-playlist-29706794" allowfullscreen frameborder="0" class="disco-embed"
+        <div class="player-frame"><iframe id="disco-playlist-29706794" name="disco-playlist-29706794" allowfullscreen frameborder="0" class="disco-embed"
           src="https://themitro.disco.ac/e/p/29706794?download=false&s=ht-YpOq8nXiYIABajT9eQUrjHdg%3A4WqeLh8M&artwork=true&color=%23FFFC52&theme=dark"
-          width="100%" height="820"></iframe><div class="player-mask"></div>
+          width="100%" height="820"></iframe><div class="player-mask"></div></div>
       </div>
 
       <div class="listen-col player-reveal">
         <p class="listen-label">THRILLER</p>
-        <iframe id="disco-playlist-29706851" name="disco-playlist-29706851" allowfullscreen frameborder="0" class="disco-embed"
+        <div class="player-frame"><iframe id="disco-playlist-29706851" name="disco-playlist-29706851" allowfullscreen frameborder="0" class="disco-embed"
           src="https://themitro.disco.ac/e/p/29706851?download=false&s=TXjZkdmyWhYbLhCpvT9kxHMpNQ8%3AcpAqw6WM&artwork=true&color=%23FFFC52&theme=dark"
-          width="100%" height="820"></iframe><div class="player-mask"></div>
+          width="100%" height="820"></iframe><div class="player-mask"></div></div>
       </div>
 
     </div>
@@ -1573,7 +1570,8 @@
   }
   observeLogos();
 
-  // Players: zoom-blur cascade reveal
+  // Players: zoom-blur cascade reveal. The frosted veil stays over each player
+  // until ITS iframe actually finishes loading, then lifts — so players never "pop" in.
   function revealPlayersIn(scope) {
     const root = scope || document;
     const players = Array.from(root.querySelectorAll('.player-reveal'));
@@ -1582,11 +1580,14 @@
       const siblings = Array.from(el.parentElement.querySelectorAll(':scope > .player-reveal'));
       const idx = Math.max(0, siblings.indexOf(el));
       el.style.setProperty('--pd', (idx * 180) + 'ms');
-      // reset any settled state
+      // reset any settled state from a previous visit
       el.style.transform = '';
       el.style.opacity = '';
       el.style.willChange = 'opacity, transform';
       el.classList.remove('revealed');
+      // re-cover the player with the frosted veil before re-arming
+      const mask = el.querySelector('.player-mask');
+      if (mask) mask.classList.remove('cleared');
       void el.offsetWidth;
       el.classList.add('revealed');
       // when zoom finishes, strip transform so iframe rests on native pixel grid (no jitter)
@@ -1598,6 +1599,18 @@
           el.removeEventListener('animationend', handler);
         }
       });
+      // lift the veil only once the player content is genuinely loaded
+      if (mask) {
+        const iframe = el.querySelector('iframe');
+        let done = false;
+        const lift = () => { if (done) return; done = true; mask.classList.add('cleared'); };
+        if (iframe) {
+          iframe.addEventListener('load', lift, { once: true });
+          setTimeout(lift, 3000); // safety net if load already fired or stalls
+        } else {
+          lift();
+        }
+      }
     });
   }
 
