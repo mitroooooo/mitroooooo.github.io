@@ -1782,9 +1782,13 @@
       if (typeof activateSection === 'function') activateSection('work');
       const sph = document.getElementById('intro-sphere');
       if (sph) sph.style.animation = 'none';            // reset the sphere motion
+      // bring the overlay back INSTANTLY (suppress its opacity transition) so Work never
+      // flashes through while the overlay fades in — that flash was the "blink"
+      intro.style.transition = 'none';
       intro.classList.remove('depart', 'hide', 'gone');
       intro.style.display = '';
-      void intro.offsetWidth;
+      void intro.offsetWidth;                           // commit the fully-opaque state in this frame
+      intro.style.transition = '';                      // restore -> the reveal dissolve still animates
       if (sph) sph.style.animation = '';                // restart the forward-drift animation cleanly
       startSequence(SPIN_MS);
     };
