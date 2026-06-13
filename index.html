@@ -1548,34 +1548,28 @@
   }
   observeLogos();
 
-  // Players: zoom-blur cascade reveal when scrolled into view
+  // Players: zoom-blur cascade reveal
   function revealPlayersIn(scope) {
-    const players = (scope || document).querySelectorAll('.player-reveal');
+    const root = scope || document;
+    // collect player containers grouped by their immediate parent for per-row cascade
+    const players = Array.from(root.querySelectorAll('.player-reveal'));
     if (!players.length) return;
-    // group by their parent section so cascade index resets per section
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          const el = e.target;
-          // cascade index among siblings sharing same parent
-          const siblings = Array.from(el.parentElement.querySelectorAll(':scope > .player-reveal'));
-          const idx = Math.max(0, siblings.indexOf(el));
-          el.style.setProperty('--pd', (idx * 220) + 'ms');
-          el.classList.add('revealed');
-          obs.unobserve(el);
-        }
-      });
-    }, { threshold: 0.15 });
-    players.forEach(p => obs.observe(p));
+    players.forEach((el) => {
+      const siblings = Array.from(el.parentElement.querySelectorAll(':scope > .player-reveal'));
+      const idx = Math.max(0, siblings.indexOf(el));
+      el.style.setProperty('--pd', (idx * 200) + 'ms');
+      // force reflow so re-adding class restarts animation
+      el.classList.remove('revealed');
+      void el.offsetWidth;
+      el.classList.add('revealed');
+    });
   }
-  revealPlayersIn(document);
 
-  // re-arm a section's players each time it's opened
+  // re-arm a section's players each time it's opened (animate all at once, cascaded)
   function rearmPlayers(name) {
     const sec = document.getElementById('section-' + name);
     if (!sec) return;
-    const players = sec.querySelectorAll('.player-reveal');
-    players.forEach(p => { p.classList.remove('revealed'); p.style.removeProperty('--pd'); });
+    if (!sec.querySelector('.player-reveal')) return;
     requestAnimationFrame(() => revealPlayersIn(sec));
   }
 
