@@ -20,7 +20,10 @@
       --nav-h: 64px;
     }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
 
     body {
       background: var(--bg);
@@ -1528,6 +1531,48 @@
       item.classList.add('playing');
     });
   });
+
+  // Lightweight smooth wheel scroll (desktop only; touch keeps native momentum)
+  (function () {
+    const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    const fine = window.matchMedia('(pointer: fine)').matches;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isTouch || !fine || reduced) return; // skip on mobile/tablets/reduced-motion
+
+    let targetY = window.scrollY;
+    let currentY = window.scrollY;
+    let ticking = false;
+    const ease = 0.12; // lower = smoother/heavier
+
+    function clamp(v) {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      return Math.max(0, Math.min(v, max));
+    }
+
+    function loop() {
+      currentY += (targetY - currentY) * ease;
+      if (Math.abs(targetY - currentY) < 0.5) {
+        currentY = targetY;
+        ticking = false;
+      } else {
+        requestAnimationFrame(loop);
+      }
+      window.scrollTo(0, currentY);
+    }
+
+    window.addEventListener('wheel', (e) => {
+      // ignore zoom (ctrl+wheel) and let scrollable inner elements work
+      if (e.ctrlKey) return;
+      e.preventDefault();
+      targetY = clamp(targetY + e.deltaY);
+      if (!ticking) { ticking = true; requestAnimationFrame(loop); }
+    }, { passive: false });
+
+    // keep in sync if user uses keyboard / programmatic scroll
+    window.addEventListener('scroll', () => {
+      if (!ticking) { targetY = window.scrollY; currentY = window.scrollY; }
+    });
+  })();
 </script>
 
   <div class="page-arrow left" onclick="navigatePage(-1)" aria-label="Previous page">
