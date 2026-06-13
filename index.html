@@ -82,6 +82,19 @@
     .nav-links a:hover,
     .nav-links a.active { color: var(--text); }
 
+    .nav-head {
+      display: flex;
+      align-items: center;
+    }
+    .nav-head img {
+      height: 52px;
+      width: auto;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      margin: -20px 0;
+    }
+    .nav-head img:hover { transform: scale(1.12); }
+
     .nav-socials {
       display: flex;
       align-items: center;
@@ -854,6 +867,7 @@
     <li><a href="#" onclick="showSection('about')" id="nav-about">About</a></li>
     <li><a href="#" onclick="showSection('work')" id="nav-work" class="active">Work</a></li>
     <li><a href="#" onclick="showSection('listen')" id="nav-listen">Listen</a></li>
+    <li class="nav-head"><img src="MITROHEAD.webp" alt="" onclick="showSection('about')"></li>
     <li class="nav-dropdown">
       <a href="#" id="nav-solo" onclick="event.preventDefault()">Solo</a>
       <ul class="dropdown-menu">
@@ -1234,7 +1248,7 @@
   const pageOrder = ['about','work','listen','selfaware1','selfaware2','goldenghost','galapogos','client','contact'];
 
   function muteSection(sec) {
-    // stop any playing embeds by clearing src (stored for restore)
+    // store src then clear to stop playback
     sec.querySelectorAll('iframe').forEach(f => {
       if (f.src) { f.dataset.src = f.src; f.src = ''; }
     });
@@ -1243,8 +1257,15 @@
   }
 
   function restoreSection(sec) {
+    // swap each dead iframe with a fresh clone to guarantee reload
     sec.querySelectorAll('iframe').forEach(f => {
-      if (!f.src && f.dataset.src) { f.src = f.dataset.src; }
+      const storedSrc = f.dataset.src || f.getAttribute('data-original-src');
+      if (!f.src && storedSrc) {
+        const fresh = f.cloneNode(false);
+        fresh.src = storedSrc;
+        fresh.dataset.src = '';
+        f.parentNode.replaceChild(fresh, f);
+      }
     });
   }
 
@@ -1311,6 +1332,10 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
+    // cache original src on every iframe so restoreSection always has reference
+    document.querySelectorAll('iframe').forEach(f => {
+      if (f.src) f.dataset.src = f.src;
+    });
     const hash = window.location.hash.replace('#', '');
     if (hash && document.getElementById('section-' + hash)) {
       activateSection(hash);
