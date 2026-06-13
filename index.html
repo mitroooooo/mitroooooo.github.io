@@ -1544,6 +1544,50 @@
       item.classList.add('playing');
     });
   });
+
+  // Smooth free-flowing scroll (desktop only). Gentle inertia, no snapping.
+  (function () {
+    const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    const fine = window.matchMedia('(pointer: fine)').matches;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isTouch || !fine || reduced) return;
+
+    let target = window.scrollY;
+    let current = window.scrollY;
+    let raf = null;
+    const ease = 0.075;        // smaller = smoother, more glide
+    const step = 0.65;         // dampen each wheel notch so it flows, not jumps
+
+    function maxScroll() {
+      return document.documentElement.scrollHeight - window.innerHeight;
+    }
+
+    function animate() {
+      const diff = target - current;
+      current += diff * ease;
+      if (Math.abs(diff) < 0.4) {
+        current = target;
+        window.scrollTo(0, current);
+        raf = null;
+        return;
+      }
+      window.scrollTo(0, current);
+      raf = requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('wheel', (e) => {
+      if (e.ctrlKey) return;            // allow zoom
+      // let inner scrollable areas (iframes etc.) behave normally
+      e.preventDefault();
+      target += e.deltaY * step;
+      target = Math.max(0, Math.min(target, maxScroll()));
+      if (!raf) raf = requestAnimationFrame(animate);
+    }, { passive: false });
+
+    // resync when scroll changes by other means (keys, anchor, resize)
+    window.addEventListener('keydown', () => { target = window.scrollY; current = window.scrollY; });
+    window.addEventListener('resize', () => { target = window.scrollY; current = window.scrollY; });
+  })();
 </script>
 
   <div class="page-arrow left" onclick="navigatePage(-1)" aria-label="Previous page">
