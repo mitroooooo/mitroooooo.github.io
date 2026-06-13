@@ -56,10 +56,25 @@
       gap: 8px;
     }
 
-    .logo-bolt {
-      height: 26px;
+    .nav-tm {
+      display: flex;
+      align-items: center;
+    }
+    .nav-tm img {
+      height: 30px;
       width: auto;
-      display: block;
+      cursor: pointer;
+      opacity: 0.85;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .nav-tm img:hover { opacity: 1; transform: scale(1.08); }
+
+    .mobile-tm-logo {
+      height: 48px;
+      width: auto;
+      margin-bottom: 8px;
+      opacity: 0.9;
+      cursor: pointer;
     }
 
     .nav-links {
@@ -848,12 +863,13 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo" onclick="showSection('about')"><img class="logo-bolt" src="LIGHTNING.webp" alt="">THE MITRO</a>
+  <a href="#" class="nav-logo" onclick="showSection('about')">THE MITRO</a>
 
   <ul class="nav-links">
     <li><a href="#" onclick="showSection('about')" id="nav-about">About</a></li>
     <li><a href="#" onclick="showSection('work')" id="nav-work" class="active">Work</a></li>
     <li><a href="#" onclick="showSection('listen')" id="nav-listen">Listen</a></li>
+    <li class="nav-tm"><img src="TM_LOGO.png" alt="TM" onclick="showSection('about')"></li>
     <li class="nav-dropdown">
       <a href="#" id="nav-solo" onclick="event.preventDefault()">Solo</a>
       <ul class="dropdown-menu">
@@ -886,6 +902,7 @@
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobile-menu">
+  <img src="TM_LOGO.png" alt="TM" class="mobile-tm-logo" onclick="showSection('about');closeMobile()">
   <a href="#" onclick="showSection('about');closeMobile()">About</a>
   <a href="#" onclick="showSection('work');closeMobile()">Work</a>
   <a href="#" onclick="showSection('listen');closeMobile()">Listen</a>
@@ -1234,25 +1251,28 @@
   const pageOrder = ['about','work','listen','selfaware1','selfaware2','goldenghost','galapogos','client','contact'];
 
   function muteSection(sec) {
-    // store src then clear to stop playback
     sec.querySelectorAll('iframe').forEach(f => {
-      if (f.src) { f.dataset.src = f.src; f.src = ''; }
+      const src = f.src || f.dataset.originalSrc;
+      if (src) { f.dataset.originalSrc = src; f.src = 'about:blank'; }
     });
-    // close opened work videos
     sec.querySelectorAll('.work-item.playing').forEach(item => closeWorkItem(item));
   }
 
   function restoreSection(sec) {
-    // swap each dead iframe with a fresh clone to guarantee reload
-    sec.querySelectorAll('iframe').forEach(f => {
-      const storedSrc = f.dataset.src || f.getAttribute('data-original-src');
-      if (!f.src && storedSrc) {
-        const fresh = f.cloneNode(false);
-        fresh.src = storedSrc;
-        fresh.dataset.src = '';
-        f.parentNode.replaceChild(fresh, f);
-      }
-    });
+    // slight delay so section is display:block before iframe loads
+    setTimeout(() => {
+      sec.querySelectorAll('iframe').forEach(f => {
+        const orig = f.dataset.originalSrc;
+        if (orig && (f.src === '' || f.src === 'about:blank' || f.src.endsWith('about:blank'))) {
+          const fresh = document.createElement('iframe');
+          // copy all attributes
+          Array.from(f.attributes).forEach(a => fresh.setAttribute(a.name, a.value));
+          fresh.src = orig;
+          fresh.dataset.originalSrc = orig;
+          f.parentNode.replaceChild(fresh, f);
+        }
+      });
+    }, 80);
   }
 
   function showSection(name, dir) {
@@ -1320,7 +1340,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     // cache original src on every iframe so restoreSection always has reference
     document.querySelectorAll('iframe').forEach(f => {
-      if (f.src) f.dataset.src = f.src;
+      if (f.src) f.dataset.originalSrc = f.src;
     });
     const hash = window.location.hash.replace('#', '');
     if (hash && document.getElementById('section-' + hash)) {
