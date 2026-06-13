@@ -129,17 +129,35 @@
     .nav-socials a {
       color: var(--muted);
       text-decoration: none;
-      transition: color 0.2s;
       display: flex;
       align-items: center;
+      transition: color 0.2s, transform 0.15s ease-out;
+      will-change: transform;
     }
 
-    .nav-socials a:hover { color: var(--text); }
+    .nav-socials a:hover { color: #fff; }
 
     .nav-socials svg {
       width: 18px;
       height: 18px;
       fill: currentColor;
+      transition: filter 0.3s;
+    }
+
+    /* liquid shimmer on hover */
+    .nav-socials a:hover svg {
+      animation: socialShimmer 1.4s linear infinite;
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.35));
+    }
+    @keyframes socialShimmer {
+      0%   { fill: #ffffff; }
+      25%  { fill: #9aa3ad; }
+      50%  { fill: #ffffff; }
+      75%  { fill: #c8ccd2; }
+      100% { fill: #ffffff; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .nav-socials a:hover svg { animation: none; }
     }
 
     /* ── HAMBURGER ── */
@@ -1545,48 +1563,76 @@
     });
   });
 
-  // Smooth free-flowing scroll (desktop only). Gentle inertia, no snapping.
+  // Magnetic social icons (desktop only)
+  (function () {
+    const fine = window.matchMedia('(pointer: fine)').matches;
+    if (!fine) return;
+    const strength = 0.4;   // how strongly icon follows cursor
+    const radius = 60;      // px distance of effect
+    document.querySelectorAll('.nav-socials a').forEach(icon => {
+      icon.addEventListener('mousemove', (e) => {
+        const rect = icon.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+        icon.style.transform = `translate(${dx * strength}px, ${dy * strength}px)`;
+      });
+      icon.addEventListener('mouseleave', () => {
+        icon.style.transform = 'translate(0, 0)';
+      });
+    });
+  })();
+
   (function () {
     const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
     const fine = window.matchMedia('(pointer: fine)').matches;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (isTouch || !fine || reduced) return;
 
-    let target = window.scrollY;
-    let current = window.scrollY;
+    const DURATION = 900;     // ms per scroll gesture — higher = longer glide
+    const STEP = 0.9;         // wheel notch strength
+
+    let startY = window.scrollY;
+    let targetY = window.scrollY;
+    let startTime = 0;
     let raf = null;
-    const ease = 0.09;         // glide factor
-    const step = 0.7;          // dampen each wheel notch
 
     function maxScroll() {
       return document.documentElement.scrollHeight - window.innerHeight;
     }
 
-    function animate() {
-      const diff = target - current;
-      // ease toward target; keep sub-pixel precision to avoid stair-stepping
-      current += diff * ease;
-      // snap only when extremely close so the tail stays buttery
-      if (Math.abs(diff) < 0.08) {
-        current = target;
-        window.scrollTo(0, Math.round(current));
+    // easeOutExpo: fast start, very soft landing
+    function easeOutExpo(t) {
+      return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    }
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / DURATION, 1);
+      const eased = easeOutExpo(t);
+      const y = startY + (targetY - startY) * eased;
+      window.scrollTo(0, y);
+      if (t < 1) {
+        raf = requestAnimationFrame(animate);
+      } else {
         raf = null;
-        return;
       }
-      window.scrollTo(0, current); // fractional scroll = smoother tail
-      raf = requestAnimationFrame(animate);
     }
 
     window.addEventListener('wheel', (e) => {
       if (e.ctrlKey) return;
       e.preventDefault();
-      target += e.deltaY * step;
-      target = Math.max(0, Math.min(target, maxScroll()));
+      // if idle, start fresh from real scroll position
+      if (!raf) targetY = window.scrollY;
+      startY = window.scrollY;
+      targetY = Math.max(0, Math.min(targetY + e.deltaY * STEP, maxScroll()));
+      startTime = performance.now();
       if (!raf) raf = requestAnimationFrame(animate);
     }, { passive: false });
 
-    window.addEventListener('keydown', () => { target = window.scrollY; current = window.scrollY; });
-    window.addEventListener('resize', () => { target = window.scrollY; current = window.scrollY; });
+    window.addEventListener('keydown', () => { targetY = window.scrollY; if (raf) { cancelAnimationFrame(raf); raf = null; } });
+    window.addEventListener('resize', () => { targetY = window.scrollY; });
   })();
 </script>
 
