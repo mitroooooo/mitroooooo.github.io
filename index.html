@@ -653,9 +653,7 @@
 
     /* ── ALBUM PAGES ── */
     .album-page {
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
+      background: transparent;
       position: relative;
       overflow: hidden;
     }
@@ -669,13 +667,7 @@
       z-index: 0;
     }
 
-    .album-page::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      z-index: 1;
-    }
+    .album-page::before { content: none; }
 
     .album-page-inner {
       position: relative;
@@ -688,15 +680,34 @@
       margin-top: 14vh;
     }
 
-    /* ── SPACE BG (Work / Listen / Contact) ── */
-    .bg-space {
-      background-image: url('BACKGROUNDSELFAWARE.jpg');
+    /* ── GLOBAL BACKGROUND SYSTEM (fixed image layer + fog layer, behind all content) ── */
+    #bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-color: #000;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      background-color: rgba(0,0,0,0.45);
-      background-blend-mode: darken;
     }
+    #bg-layer::after { /* darkening veil over the image; strength set per section via --bg-dim */
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0, var(--bg-dim, 0.45));
+    }
+    #vanta-fog {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.9s ease;
+    }
+    #vanta-fog.on { opacity: 1; }
+
+    /* sections are transparent; their backdrop is the fixed layers above */
+    .bg-space { background: transparent; }
 
     .album-page .section-title {
       text-shadow: 0 2px 24px rgba(0,0,0,0.6);
@@ -990,6 +1001,11 @@
   </style>
 </head><body>
 
+<!-- global background system: image layer + animated fog layer, both behind all content -->
+<div id="bg-layer"></div>
+<div id="vanta-fog"></div>
+
+
 <!-- NAV -->
 <nav>
   <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIEAAAB4CAYAAADVPZGBAAARnklEQVR4nO2debBkdXXHP6f7vZlBBGdYRK0iRUYtNCFUgUrAMhBUKpW4F5ZbBgaGGRVkM6KyigNCIgYYUUHAgQGpcilCJZQGCjdKLaMGd0VqUiGDUcSEDIsLDPO6T/74/c7c3137dvft7nvve9+qV/26+/Zdzz3ne76/8zsXPFRVWMKihAQXfw/go8Be9p1/1eBPEv+TWKbvX8PPk8to4vMkktuK7W/Gsln/Jz9L7u+gdeUtF+5T0U0zaL9lwO/z9jX5mlxX3v/h+z6wHHi/iPxEVTtzIqKqOicij6vq3cCWgp1bQjtwM3Cfqs4BvV2WoqodEemr6jnApcAOYG5GO1kV8u7ILM9QxhM0GQs4D/BlETnGrje4cNABXgV8AeiKyIKq3goc63/YdENYggsBHeAXwOHAQz4CHAn8SABU9avA7SKyybuI3YC7gUOBnl9BmzBMPG8yjAMA/B44WkS+B6CqLwE2A39uRnA78FfAwcBWbyWrgW8D+057z5dQKSz0HSsit6nqPNAFfgDsDhxgrv4JYBmOMBypqioi96vqGuCzwAq/XN4dNGzcLLN8GL/HWU9yXV2KPVsPd/ckmXXeestkC1nI4iXjILkflq11gYu8ASwXkR2qeiXwAuBHQNeMYM7/6DDgMhE5Q1XnReQuVf0zXHgwt9IhfmHy0pmsZezAqzCCYQzSttkD9gT+BXg2UawM920d8B1g3i8f7m/yRI9ihFnfFaWUo6Sk9pkAKiI/8xngDlV9PfAuIgNxv1XV29Rhh3891n8+X7DhRkJVO6p6vz/Onkbo+9fDZr2PVcOTf1R1f1X9TXDcP1XVOfMEPf9qVnmtqt4jIg+oamQtzYYd2+64OyAPy/1J6xKdlyZDcFkgwI3AM4GdBCHRjMAucgfnJvYGNqvqMfa9iDTaEBzNEfUnozDb8XqJWB7dZPgwsKCq5wGvwKX9dhPETkYYb7p+wVcAF4hIj+I7p21oiziEqpru8zLggzjPFl7LPqAhKQphrvBCVT3ar6gthtAnIrlZaLTHM/gxIVXVlbihgDnSpFwpMAJbuAPcpKr7An0jGC1AFWln3dH14ewTwHMpEP2KLmrH/3B/4FrPCdpiBG250JkIwsAG4G3EeUBsUYjnyFkwfvAGVT3Vr7gNYwlFnqDRZNAPDPVU9U+BK4n0gNyfDDICiPjBR1T1EG8ITfYIfdqR+qXgeYCo6nLgJlw6XKRMlvIEEPGDFcAtqrpHsMEmohXELwddn839A/Ai0tlAEn0RKeUJIOIHfwJc6QlHU7OFQZVNjfQSAQ94HXAmgw1gF8oaAUT84CRVXdNgfmADK3loHCfw4bmvqvsD1zPk4NQwRgDOEPrAx1X1+Q3lB3meoMyoZe1gPMC/vRE39B8OjBX+HMoZQXI0UIFn4PSDOeLFqm2AJl7rDuMB55KWhaHEcZQlhuH3FhaOAC5uoazclIsf8oCjgI2kecCgsBDzBP3wwwB9YHvGiub8Bs9W1Vc3TFbOko018X3t4cOwquoq4AbcxU/WPgiuYOjJvNVAsSewlZwL/Mx/Fp4g8xCfUtXn0BxZuWjsoA88NcV9GQedQBZeTVwWNt6zEzgNdyPb5yEGDqmaEdwLnEB6cokNO+8HfMrLyk3nB40IBUEYWA+8lTQPMIP4APBpXDVVLpLhIAv7iMg9wEeIwoDB+MFfq+p7W8APBqWPM0cgCx8EbCItC/dw1+nrwIdxtSGFx1QqO/Bu/ny/4ixD6AGXqOrhDeMHSSg1FosCWXgZLh1MysKWGv4PsDYY9Cv0cJ3EayZ87FkAjgf+j3g9u5GReWCLl5W1xmFhEFuusyewdPBS4MWkq4SsSnqDiGzznycrp0MIDDc0vExEHgBOIeIDBpOVDwSuboCsXFcDzUXAA14FvIf07DALA5eLyO1BkfDQKWLugsCCr1f7PHC13+BCsJzxgzWquqHmYaERBNAQyML7Adfh9j+8gc0A/h04z5/30h6tDCcIV9bzO3QW8GO/4fB72/gmVT3IE5gmpI2GQYNLs4L4+H498Byy50s8DhwvIjuIh7XSimHZPVH/+gSwBje/LdyQuZ6n4WTlFdDoYeeZw3vfnqqeBbyG/HTwdBG5zy9fJIalPi8rG0dvXDn2nIj8BHg3ER8w2PtDgSsawA9qi4AHvAS4hLQsbLzgZhG5ycrLM1ZVeBOW8QSpFVi8F5Hrgc+RnzaerKpvqiE/qP2s5KBaeE+c4LOMuCzcx533rcDpPuxmpbcDO6IMO5Sc2E/t4LKF/yLiA+EG+sA1qvrHDeEHdeIEVi18FS7rypKFnwKOE5HHiHhDGdhyfYKVZrkQwgWT8DsoIrIdpx8sED+JJlLsBdzoPUHTZeWpIAgDa4C1ZPOALnCuiHzXeMMQm4hdg7HuTH93z4nIN4GLSM/fs7TxKOD8FsjKE0cgCz8P+Bj5svAXRORyX9Mxqso5djjYtVP+Lr8E+Ar5/OACVT2yJvygLi4/hkAWnsdVC68kWxZ+CHiHX74/xjzRwRMzy8DvgPrwsA74X+KKopGZLi4srCLiE0uIw2ThjcBLSYcBk4DXi8iDRMPJwyJmNFV4AksbuyLyC+Bk0tVIxlxXA9f4HV8yggABD3glcDb56eAmEfniCDwgRKzJRiVGADF+8E/ANUR8wGDv36yqb59xtXKtyGkgC++LayYlxNNB4wH34Kq5yvROKJMGx7KDqmKkpYHvwfXDyeIHfeAKLyvXsVp5qnzBeIAPq9cCf0Q6HRTgd7jh4R1Qbb+IMgNIpZGQlU/A1bdBXFa2biE3e1m5bmnjtPel673ou4A3kC8Lnyki9/qwUelwd9WeIOQHP8QNNOWljYfgmmQt2rTRp4MLqnowrnIreS4sDHxWRDaPyQNykdWpZGx4y+6KyNXAraTDgg1Dn6aqx9YkbTRMJRwE6eAKXBOJ3UjLwl3gP4FTCmTh3E2UXbByTxDuhD/Qk4H/JrsQRYFPqur+U5SVBxGmaXGCcPLoIWTLwj3gRBF5hOFk4RADJxZVyglCWBooIg8D7yDiA8lq5X2AG4I7YxoxeaYcJEgHXwucgfOKySKRLnChiHxjUmHAMElPEKaNd+AsPo8fvBLXf78O/GCiniBIB5+NywasSiiZDn4JuLRkOliEgQY/7FzEUWCy8gdwnULzZOWLVPWIGfODiYYD7+U63q1fBzyLeJVQWC28zn42YhiY2KzkoRHIyjtxaeNviSuKYbXyjTOuVp50tbGFgTOBV5OuFjZN4GQR+SWjy8JlUXrsoIrxBatGug84nfxqpAOZfDVS0d0+MU8Q8IBDgb8nOx3sAh8V14x6ojwgxNTUOpOJRWQLrnN63mym9ar61pqljWMhqBLaHTc6mOwabzzgh8D7K+ABMEKKWMnKSsDSwFOA/yBdjWQZw9UNqkYqA1P5LgMOIu4F7Pz+gQnJwgWIjR0UoUo10WTlR4DjcLNms6qRVuJ6K3eoPm1MdvWcKIIw8Eac8edVCb1bRH6cUy08CoYmhlNDwA++g8sY8tLGo3F5ch3SxpGg8V5C15A/aeRzInJdQbXwpBAbSp72/DtLGz8M3EFxNdLLm8gPNN5LaDNOFEumg13gfkaThSvD0PMOqoCljf7tScCDZFcjCS4s7EW11UjTiLcmC78XOIbsdHAnrlp4O6PLwoNQFP5KF5VMJH4GsvKvcYaQJSv3gAOAj1VYjTRxAwh4wOHAxeSngxeJyLcmnA4OTHuHmZBaOQJZ+U7cUGoeP3ibqq6fcTVSKQTp4B640cHkpJGkLDxOtfC4KD0NbdIwfnAu8C3yq5Eu1+p6J07yeC0dvJz0pJFQFj7RLzdOtXAZFIWDaqqNx0UgKy8AJ+Jm1yZlZcX13dniy7HHTRsnEuKCMPAmYANpPSBsIvGrSVQJjYKZGwHEqpG2AqeSlpUtLLwUF0fHSRsnZQA2aeQAXDqY7BBiYeAqcU0kpiULVzKKOBUE/ODTOGk1L218n9bskTyJWojNuKl3oSYQNpF4X0WycOndK/iudLuaaRqIycSnAz8nLitbbOvgeieuoj69Ey0dPAd4Oel0UHC9HE6csixcCnU4gbvgT4yIyOO4Sa7WdSOZNq7G9UZKKnBTR8ADXkZ2a1kjhmdI9KTSmfMAj9LEcKrj+kFYuAc3EycvbXxLkDYOExYqGy7WqLXsSlxLueQTx2zW0GeCauFpysKDUJsUMQtmCJuAL1I8ieXAGY42WtHHVcDzSKeDc7jR0lnKws0hhiG8m+97orUe+CVpWVmBPXDVSMO03DdeMRY03kPgOPJl4bUi8iiTk4XLYOx2NTNBICs/RFBvR2SwYcv9Dw6RNo49lBykg88lv4dAFzhHRP5tmlVCo6Bu2UEMAT/4Eq4kK4sf9IBzVPWoIfjByMcUpINdXIv5lcR7CFg6+K8yfhOJqaC2niCAycoXAt8gzg/CtPF6dU2eBhWpjmvUlg6eBxxJPAyYLPwgrkxu3CYSU0HtsoPUxuOysvVWDvmBEa7n44o0J1akGvCAvwAuIC0Lm0c4yY+OTrpauBI0wROEsvI24J1EndEMxg9OUNW/LREWhr4zE+ngFtLpoBnEZSJyZ915gEfpGsNaIOAHt5LfW7kPXKWqBxSkjaPqBEVPGjEe8G3g/CnLwuOglrLxIIRNML5PvLeypY17AdcVzG0cxQvMee+ylvQDqC0EPIpLB3dSM1m4ANW2q5kGgmrlJ3G5+e/8V8m08RjgbO+Ok4Y+FMfRqIfAarIfQG3bOE1EttZMFobi4y3drqZOXUTCauV7cTN6s4ade8BGVT0sIyyUFosS6eBmYBXxdNBk4RtE5JYaysKDEJONiy50rYwAYrOZbgBuITttnMcVqSabPwwDSwfPBv6SeDZgsvB9wJmzrBYeF9OYlTwp2B1+Kq7Jczjs3MHdpQcRFaGEd3+ZY7IwcAROo8hqIvEksEZEfstsZeGx0JjsIIlg2PkxHD94irSs3AP+Lpi70KF8dtBT1afhwsA82engWSLyvYakg7lorBFArDfSd3EFHWFqllQTn0k8ng9cPfCPwAvJTgdvE5FPNIAHDAyFtVcMByEwhCuAfybOD8IilL8pWYRix/ss3MBV+BvLDB4g6C1c0aFMCqWHkpsOGy/YAGwjPdt5lAqkDq6yyU6ihZEF3LOGHqYhsnABmpsdJCHxJlnriB7nG5atE/xf5piSocN4wEYR+XrTeYBH6fKyRjDeQFb+Go7NJ6XbYY8ja9bQXVTTTGraKMUJGnGhS8D4wYeIZjsbaRvHo3WBX+Mmx9ioZpPOWam5iCOvoE6wYWfPD9bhxvWX2dfDro5o1hDAOhnvGQO1Rds8QbIs7QSiC2nuu6xOoESp4YcaNDycROkUsTVGAKmytI1ETH8Y9HClY18FLmwgDzAMvLZlsoOmwsrSLsaN86/yn5fNDvbENZc+PqhuauLNMrDUrsxc/yYeOCKiqqr+dS2wn/+qrGq4Azcu8Cs/nNwqHhDCjKCRF3oQ7ML52c5b/ceDjMBqFrYB25wdtdYASnuCxocKjR4xY9XAA7Miq0FosQHsQps5wS5IvFHWML9rvQFAe8YOhkWrjX5YLFYjWEKAxWgEHZY8gaH0KGIbsdiONw+17k8wSUy1wXUTsFiNYDGFwUra2rYNczS0a/qksJjuCMNi8wRFqEdH0xkgNIIlbsDiPBmlZOPFhFZVFpXEYjJ4KFFEvBjviMXGCSrpct62E7akEyRQhhO0LRwscYIEmjwreRwseYIAjZ+LOCLaeEyjYNFygi7tO6axsJiMQILXJU8QoOgCh80eltBclNYJihacK7FMW9DFdSVpEwZmQ+EFVuJTtOz/Wj+HcERkHStEDa/ahHmiB5Enry0QXeAVpE+AfbfbZPdx6hBgOXFuYK8riCawtgVzpL25vV8Wvvk9rnH0k8FnPdzJesK/b4te0Mc9ROPpRMcUPr6ubRxoJ/Aboqbg1mJnGfAw/gNU9em4uXcLRHeI4k7Idt9BtBXwk0r2Jt2d3LC95o2ohoJ/3sI+RNfU0AX+ICKP/D/UDg4rRteZgwAAAABJRU5ErkJggg==" alt="TM" class="nav-center-tm" onclick="showSection('work')">
@@ -1215,9 +1231,6 @@
 
   <!-- ══ SOLO ALBUM PAGES ══ -->
   <section id="section-selfaware1" class="album-page">
-    <video class="bg-video" autoplay muted loop playsinline poster="BACKGROUNDSELFAWARE.jpg">
-      <source src="BACKGROUNDHYPERLOOP.mp4" type="video/mp4">
-    </video>
     <div class="album-page-inner">
       <h1 class="section-title">Selfaware Vol.1</h1>
       <div class="album-widget player-reveal">
@@ -1234,9 +1247,6 @@
   </section>
 
   <section id="section-selfaware2" class="album-page">
-    <video class="bg-video" autoplay muted loop playsinline poster="BACKGROUNDSELFAWARE.jpg">
-      <source src="BACKGROUNDHYPERLOOP.mp4" type="video/mp4">
-    </video>
     <div class="album-page-inner">
       <h1 class="section-title">Selfaware Vol.2</h1>
       <div class="album-widget player-reveal">
@@ -1249,7 +1259,7 @@
     </div>
   </section>
 
-  <section id="section-goldenghost" class="album-page" style="background-image:url('BACKGROUNDGOLDENGHOST.png')">
+  <section id="section-goldenghost" class="album-page">
     <div class="album-page-inner">
       <h1 class="section-title">Golden Ghost</h1>
       <div class="album-widget player-reveal">
@@ -1262,7 +1272,7 @@
     </div>
   </section>
 
-  <section id="section-galapogos" class="album-page" style="background-image:url('BACKGROUNDGALAPAGOS.jpg')">
+  <section id="section-galapogos" class="album-page">
     <div class="album-page-inner">
       <h1 class="section-title">Galapogos</h1>
       <div class="album-widget player-reveal">
@@ -1513,6 +1523,9 @@
 
     // re-arm player zoom-blur reveal for player sections
     if (typeof rearmPlayers === 'function') rearmPlayers(name);
+
+    // set the section's background image + fog
+    if (typeof applySectionBackground === 'function') applySectionBackground(name);
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -1523,6 +1536,12 @@
     const hash = window.location.hash.replace('#', '');
     if (hash && document.getElementById('section-' + hash)) {
       activateSection(hash);
+    } else {
+      // no hash: apply background for whichever section is active by default
+      const active = document.querySelector('section.active');
+      if (active && typeof applySectionBackground === 'function') {
+        applySectionBackground(active.id.replace('section-', ''));
+      }
     }
   });
 
@@ -1605,6 +1624,91 @@
     if (!sec) return;
     if (!sec.querySelector('.player-reveal')) return;
     requestAnimationFrame(() => revealPlayersIn(sec));
+  }
+
+  /* ───────── BACKGROUND + VANTA FOG CONTROLLER ─────────
+     One fixed image layer (#bg-layer) + one fog layer (#vanta-fog) behind all content.
+     Fog colours are tunable below — grab new values from vantajs.com and paste the hex in. */
+  const SECTION_BG = {
+    about:       { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, fog: null   }, // stars only
+    work:        { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, fog: null   }, // as is
+    listen:      { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, fog: 'dark' }, // stars + fog
+    client:      { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, fog: 'dark' }, // stars + fog
+    selfaware1:  { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, fog: 'dark' }, // stars + fog (was video)
+    selfaware2:  { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, fog: 'dark' }, // stars + fog (was video)
+    goldenghost: { img: 'BACKGROUNDGOLDENGHOST.png', dim: 0.20, fog: 'warm' }, // GG image + warm fog
+    galapogos:   { img: 'BACKGROUNDGALAPAGOS.jpg',   dim: 0.35, fog: null   }, // as is
+    contact:     { img: 'BACKGROUNDSELFAWARE.jpg',   dim: 0.45, fog: null   }  // stars only
+  };
+
+  // Fog colour presets — tweak the hex values to taste (0xRRGGBB).
+  const FOG_PRESETS = {
+    dark: { highlightColor: 0x141312, midtoneColor: 0x372424, lowlightColor: 0x5d5d78, baseColor: 0x000000, blurFactor: 0.58, speed: 0.30, zoom: 1.0 },
+    warm: { highlightColor: 0x3a1c08, midtoneColor: 0x8a4a17, lowlightColor: 0xe0922f, baseColor: 0x000000, blurFactor: 0.60, speed: 0.30, zoom: 1.0 }
+  };
+
+  let vantaEffect = null, vantaScriptsPromise = null, currentFog = null, pendingFog = null;
+
+  function loadVantaScripts() {
+    if (window.VANTA && window.VANTA.FOG) return Promise.resolve(true);
+    if (vantaScriptsPromise) return vantaScriptsPromise;
+    const load = (src) => new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = src; s.async = true; s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+    vantaScriptsPromise = load('https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js')
+      .then(() => load('https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js'))
+      .then(() => true)
+      .catch(() => { vantaScriptsPromise = null; return false; });
+    return vantaScriptsPromise;
+  }
+
+  function applyFog(preset) {
+    const fogEl = document.getElementById('vanta-fog');
+    if (!fogEl) return;
+    // respect reduced-motion: skip the animated fog, just show the background image
+    if (preset && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      preset = null;
+    }
+    pendingFog = preset;
+    // fog off → fade out and release the GPU context
+    if (!preset) {
+      fogEl.classList.remove('on');
+      currentFog = null;
+      if (vantaEffect) { try { vantaEffect.destroy(); } catch (e) {} vantaEffect = null; }
+      return;
+    }
+    // same fog already running → just make sure it's visible
+    if (preset === currentFog && vantaEffect) { fogEl.classList.add('on'); return; }
+    // otherwise (re)build with the requested colours
+    loadVantaScripts().then((ok) => {
+      if (!ok || pendingFog !== preset) return;          // load failed, or section changed meanwhile
+      if (!window.VANTA || !window.VANTA.FOG) return;
+      if (vantaEffect) { try { vantaEffect.destroy(); } catch (e) {} vantaEffect = null; }
+      const opts = Object.assign({
+        el: fogEl,
+        mouseControls: false, touchControls: false, gyroControls: false,
+        minHeight: 200.0, minWidth: 200.0,
+        scaleMobile: 2.0,            // lower-res fog on phones for performance
+        backgroundAlpha: 0.0          // transparent canvas so the stars/image show through the fog
+      }, FOG_PRESETS[preset]);
+      try {
+        vantaEffect = window.VANTA.FOG(opts);
+        currentFog = preset;
+        fogEl.classList.add('on');
+      } catch (e) { /* if it throws, the bg image still shows — no harm */ }
+    });
+  }
+
+  function applySectionBackground(name) {
+    const bgEl = document.getElementById('bg-layer');
+    const cfg = SECTION_BG[name];
+    if (bgEl && cfg) {
+      bgEl.style.backgroundImage = "url('" + cfg.img + "')";
+      bgEl.style.setProperty('--bg-dim', cfg.dim);
+    }
+    applyFog(cfg ? cfg.fog : null);
   }
 
 
