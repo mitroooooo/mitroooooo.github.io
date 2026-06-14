@@ -31,7 +31,7 @@
   <div id="hint">DRAG THE SHIP &#160;&#183;&#160; &#8592; SLOWER &#160;&#160;|&#160;&#160; FASTER &#8594;</div>
   <button id="exitBtn" class="game-btn" aria-label="Exit to site">EXIT</button>
   <button id="muteBtn" class="game-btn" aria-label="Toggle music">&#9834;</button>
-  <div class="credit">THE MITRO &#183; v6</div>
+  <div class="credit">THE MITRO &#183; v7</div>
   <audio id="bgm" src="game_track.mp3" loop preload="auto"></audio>
 
   <script type="importmap">
@@ -108,7 +108,7 @@
     const ship = new THREE.Group(); ship.position.set(-2.4, 0, 0); scene.add(ship);
     let shipModel = null, shipReady = false;
     let NOZZLE = -0.5, NOZZLE_Y = 0, NOZZLE_Z = 0;   // computed from model geometry on load
-    new GLTFLoader().load('ship.glb?v=png2', (gltf) => {
+    new GLTFLoader().load('ship.glb?v=png2b', (gltf) => {
       const m = gltf.scene;
       const box = new THREE.Box3().setFromObject(m);
       const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
@@ -127,9 +127,9 @@
           if ('roughnessMap' in mt) mt.roughnessMap = null;
           if (mt.metalness !== undefined) mt.metalness = 0.35;
           if (mt.roughness !== undefined) mt.roughness = 0.5;
-          if (mt.color) mt.color.setRGB(4.5, 4.6, 5.0);     // strong albedo lift -> bright silver
-          if (mt.map && mt.emissive) {                      // safety floor: ship is never black
-            mt.emissiveMap = mt.map; mt.emissive.setRGB(1, 1, 1); mt.emissiveIntensity = 1.2;
+          if (mt.color) mt.color.setRGB(3.0, 3.05, 3.3);    // silver, not blown out
+          if (mt.map && mt.emissive) {                      // gentle safety floor: never black
+            mt.emissiveMap = mt.map; mt.emissive.setRGB(1, 1, 1); mt.emissiveIntensity = 0.5;
           }
           mt.envMapIntensity = 0.0;
           mt.needsUpdate = true;
@@ -236,7 +236,7 @@
     // ===================== POST =====================
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), isMobile ? 0.4 : 0.5, 0.45, 0.82);
+    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), isMobile ? 0.34 : 0.42, 0.7, 0.86);
     composer.addPass(bloom);
     const grade = new ShaderPass({
       uniforms: { tDiffuse: { value: null }, uAmt: { value: 0 } },
@@ -306,9 +306,9 @@
       plume.scale.set(plen, pwid, 1);
       plume.position.set(NOZZLE - plen*0.5, NOZZLE_Y, NOZZLE_Z);
       plumeMat.uniforms.uTime.value = tsec;
-      plumeMat.uniforms.uThrottle.value = throttle;
+      plumeMat.uniforms.uThrottle.value = Math.max(throttle, 0.28);   // always a visible flame, even slow
 
-      engineLight.intensity = throttle*4;
+      engineLight.intensity = 1.0 + throttle*2.0;
       engineLight.position.set(ship.position.x + NOZZLE - 0.3, ship.position.y + NOZZLE_Y, NOZZLE_Z);
 
       ship.rotation.z = 0;   // ship stays strictly horizontal so the plume always lines up
@@ -323,7 +323,7 @@
         if (ov && ov.style.display !== 'none') ov.style.display = 'none';
       }
     }
-    console.log('THE MITRO hyperspace — build 6 (bright albedo + emissive floor, no env)');
+    console.log('THE MITRO hyperspace — build 7 (tuned brightness, soft bloom, min flame)');
     animate();
   </script>
 </body>
