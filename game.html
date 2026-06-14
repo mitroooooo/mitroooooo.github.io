@@ -52,7 +52,6 @@
 
     const isMobile = window.innerWidth < 760 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 
-    // ---- shared GLSL: Ashima 3D simplex noise + fbm ----
     const NOISE = `
       vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
       vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
@@ -84,7 +83,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.95;
+    renderer.toneMappingExposure = 1.0;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const scene = new THREE.Scene();
@@ -95,15 +94,18 @@
     camera.position.set(0, 1.0, 7.6); camera.lookAt(0, 0, 0);
 
     const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
-    scene.add(new THREE.HemisphereLight(0x88aaff, 0x080816, 0.6));
-    const key = new THREE.DirectionalLight(0xffffff, 3.0); key.position.set(4, 6, 5); scene.add(key);
-    const rim = new THREE.DirectionalLight(0x99ccff, 2.0); rim.position.set(-5, 1, -4); scene.add(rim);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.add(new THREE.HemisphereLight(0xaaccff, 0x101018, 1.1));
+    const key = new THREE.DirectionalLight(0xffffff, 3.2); key.position.set(4, 6, 5); scene.add(key);
+    const rim = new THREE.DirectionalLight(0x99ccff, 2.2); rim.position.set(-5, 1, -4); scene.add(rim);
+    // strong camera-side fill so the ship is always lit by direct light (fixes black metal in Chrome)
+    const fill = new THREE.PointLight(0xffffff, 80, 60, 2); fill.position.set(1, 2, 8); scene.add(fill);
     const engineLight = new THREE.PointLight(0xffd28a, 0, 16, 2); scene.add(engineLight);
 
     // ===================== SHIP =====================
     const ship = new THREE.Group(); ship.position.set(-2.4, 0, 0); scene.add(ship);
-    let shipModel = null; const NOZZLE = -0.5;
+    let shipModel = null;
+    let NOZZLE = -0.5;                 // computed precisely from model bounds on load
     new GLTFLoader().load('ship.glb', (gltf) => {
       const m = gltf.scene;
       const box = new THREE.Box3().setFromObject(m);
@@ -112,12 +114,19 @@
       m.scale.setScalar(1.3 / (Math.max(size.x, size.y, size.z) || 1));
       m.rotation.y = Math.PI / 2;                 // nose -> +X (right)
       m.traverse((o) => { if (o.isMesh && o.material) { const mt = o.material;
-        mt.envMapIntensity = 1.9; if (mt.roughness !== undefined) mt.roughness = Math.min(mt.roughness * 0.55, 0.4);
-        if (mt.metalness !== undefined) mt.metalness = Math.max(mt.metalness, 0.55); mt.needsUpdate = true; } });
-      ship.add(m); shipModel = m; document.getElementById('loading').style.display = 'none';
+        // keep the model's own metalness (do NOT force it high — that made it env-only -> black in Chrome)
+        mt.envMapIntensity = 1.6;
+        if (mt.roughness !== undefined) mt.roughness = Math.min(mt.roughness, 0.6);
+        mt.needsUpdate = true; } });
+      ship.add(m); shipModel = m;
+      // precise nozzle = rear-most point of the model in ship-local space
+      const b = new THREE.Box3().setFromObject(m);
+      NOZZLE = (b.min.x - ship.position.x) + 0.06;
+      glow.position.x = NOZZLE;
+      document.getElementById('loading').style.display = 'none';
     }, undefined, () => { document.getElementById('loading').textContent = 'ship.glb not found'; });
 
-    // ===================== STREAKS (instanced glowing light-rays) =====================
+    // ===================== STREAKS =====================
     const COUNT = isMobile ? 460 : 1200, RANGE = 150;
     const base = new THREE.PlaneGeometry(1, 1);
     const sGeo = new THREE.InstancedBufferGeometry();
@@ -129,8 +138,8 @@
       offs[i*3] = (Math.random()*2-1)*RANGE*0.5;
       offs[i*3+1] = (Math.random()*2-1)*9.0;
       offs[i*3+2] = (Math.random()*2-1)*16.0;
-      mets[i*2] = 1.6 + Math.random()*4.0;        // base half-length
-      mets[i*2+1] = 0.015 + Math.random()*0.05;   // thickness
+      mets[i*2] = 1.6 + Math.random()*4.0;
+      mets[i*2+1] = 0.015 + Math.random()*0.05;
       seeds[i] = Math.random();
     }
     sGeo.setAttribute('aOffset', new THREE.InstancedBufferAttribute(offs, 3));
@@ -167,7 +176,7 @@
     const streaks = new THREE.Mesh(sGeo, streakMat); streaks.frustumCulled = false; scene.add(streaks);
     let streakDist = 0;
 
-    // ===================== EXHAUST PLUME (procedural fbm plasma) =====================
+    // ===================== EXHAUST PLUME =====================
     const plumeMat = new THREE.ShaderMaterial({
       uniforms: { uTime: { value: 0 }, uThrottle: { value: 0 } },
       vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
@@ -176,30 +185,30 @@
         void main(){
           float along = 1.0 - vUv.x;            // 0 nozzle(right) .. 1 tail(left)
           float cy = vUv.y - 0.5;
-          float width = mix(0.46, 0.05, along);
+          float width = mix(0.42, 0.04, along);
           float body = smoothstep(width, 0.0, abs(cy));
           float n = fbm(vec3(vUv.x*3.5, vUv.y*3.0, uTime*1.6));
           float life = (1.0-along);
-          float heat = clamp(life*1.25 + (n-0.5)*0.7, 0.0, 1.0) * uThrottle;
+          float heat = clamp(life*1.2 + (n-0.5)*0.7, 0.0, 1.0) * uThrottle;
           vec3 blue = vec3(0.30,0.6,1.0);
           vec3 gold = vec3(1.0,0.72,0.22);
           vec3 white= vec3(1.0,0.96,0.85);
-          vec3 col = mix(blue, gold, smoothstep(0.0,0.22,along));   // blue only right at the nozzle
-          col = mix(col, white, smoothstep(0.5,1.0,heat));          // white-hot core
+          vec3 col = mix(blue, gold, smoothstep(0.0,0.20,along));
+          col = mix(col, white, smoothstep(0.55,1.0,heat));
           float a = body*heat;
-          gl_FragColor = vec4(col*a*1.9, a);
+          gl_FragColor = vec4(col*a*1.35, a);
         }`,
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide
     });
     const plume = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), plumeMat);
     plume.position.z = 0.02; ship.add(plume);
 
-    // soft engine glow (procedural radial falloff — no texture, no square edge)
+    // soft engine glow — procedural radial falloff, exactly at nozzle, small & soft
     const glowMat = new THREE.ShaderMaterial({
-      uniforms: { uColor: { value: new THREE.Color(0xffd9a0) }, uInt: { value: 0 } },
+      uniforms: { uColor: { value: new THREE.Color(0xffd6a0) }, uInt: { value: 0 } },
       vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
       fragmentShader: `uniform vec3 uColor; uniform float uInt; varying vec2 vUv;
-        void main(){ float d=distance(vUv,vec2(0.5)); float a=pow(smoothstep(0.5,0.0,d),1.7)*uInt; gl_FragColor=vec4(uColor*a,a); }`,
+        void main(){ float d=distance(vUv,vec2(0.5)); float a=pow(smoothstep(0.5,0.0,d),2.0)*uInt; gl_FragColor=vec4(uColor*a,a); }`,
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false
     });
     const glow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), glowMat);
@@ -208,7 +217,7 @@
     // ===================== POST =====================
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), isMobile ? 0.55 : 0.75, 0.5, 0.7);
+    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), isMobile ? 0.5 : 0.6, 0.5, 0.75);
     composer.addPass(bloom);
     const grade = new ShaderPass({
       uniforms: { tDiffuse: { value: null }, uAmt: { value: 0 } },
@@ -216,14 +225,56 @@
       fragmentShader: `uniform sampler2D tDiffuse; uniform float uAmt; varying vec2 vUv;
         void main(){
           vec2 dir = vUv-0.5; float d=length(dir);
-          float ca=(0.0012+uAmt*0.009)*d;
-          vec3 c; c.r=texture2D(tDiffuse,vUv-dir*ca).r; c.g=texture2D(tDiffuse,vUv).g; c.b=texture2D(tDiffuse,vUv+dir*ca).b;
-          float vig=smoothstep(0.95,0.32,d); c*=mix(0.55,1.0,vig);
+          float ca=(0.0012+uAmt*0.008)*d;
+          vec2 ur = clamp(vUv-dir*ca, 0.0, 1.0);
+          vec2 ub = clamp(vUv+dir*ca, 0.0, 1.0);
+          vec3 c; c.r=texture2D(tDiffuse,ur).r; c.g=texture2D(tDiffuse,vUv).g; c.b=texture2D(tDiffuse,ub).b;
+          float vig=smoothstep(0.95,0.34,d); c*=mix(0.6,1.0,vig);
           gl_FragColor=vec4(c,1.0);
         }`
     });
     composer.addPass(grade);
     composer.addPass(new OutputPass());
+
+    // ===================== AUDIO: music + procedural engine (FMOD-style) =====================
+    const bgm = document.getElementById('bgm'); let bgmStarted = false;
+    function startBgm(){ if(bgmStarted||!bgm)return; bgmStarted=true; bgm.volume=0.5; bgm.play().catch(()=>{ bgmStarted=false; }); }
+    // try to start music immediately on load; if browser blocks autoplay, the first interaction starts it
+    window.addEventListener('load', startBgm);
+
+    let actx=null, engineGain=null, engineFilter=null, subOsc=null, subGain=null, engineOn=false;
+    function startEngineSound(){
+      if(engineOn)return;
+      try{
+        actx = new (window.AudioContext||window.webkitAudioContext)();
+        const buf = actx.createBuffer(1, actx.sampleRate*2, actx.sampleRate);
+        const data = buf.getChannelData(0);
+        for(let i=0;i<data.length;i++) data[i]=Math.random()*2-1;
+        const noise = actx.createBufferSource(); noise.buffer=buf; noise.loop=true;
+        engineFilter = actx.createBiquadFilter(); engineFilter.type='lowpass'; engineFilter.frequency.value=300; engineFilter.Q.value=7;
+        engineGain = actx.createGain(); engineGain.gain.value=0.0;
+        noise.connect(engineFilter); engineFilter.connect(engineGain); engineGain.connect(actx.destination);
+        subOsc = actx.createOscillator(); subOsc.type='sawtooth'; subOsc.frequency.value=50;
+        subGain = actx.createGain(); subGain.gain.value=0.0;
+        subOsc.connect(subGain); subGain.connect(actx.destination);
+        noise.start(); subOsc.start();
+        engineOn=true;
+      }catch(e){}
+    }
+    function updateEngineSound(thr){
+      if(!engineOn||!actx)return;
+      const t=actx.currentTime;
+      engineFilter.frequency.setTargetAtTime(250 + thr*2300, t, 0.08);   // brighter/whoosh as it accelerates
+      engineGain.gain.setTargetAtTime((0.006 + thr*0.05) * (bgm && bgm.muted ? 0 : 1), t, 0.1); // very quiet
+      subOsc.frequency.setTargetAtTime(45 + thr*95, t, 0.1);             // rumble pitch rises
+      subGain.gain.setTargetAtTime((0.004 + thr*0.03) * (bgm && bgm.muted ? 0 : 1), t, 0.1);
+    }
+    window.addEventListener('keydown', ()=>{ startBgm(); startEngineSound(); });
+
+    const mute = document.getElementById('muteBtn');
+    mute.addEventListener('click', (e)=>{ e.stopPropagation(); if(!bgm)return; bgm.muted=!bgm.muted; mute.textContent=bgm.muted?'\u2715':'\u266a'; mute.classList.toggle('off',bgm.muted);
+      if(!bgm.muted && !bgmStarted) startBgm(); });
+    document.getElementById('exitBtn').addEventListener('click', (e)=>{ e.stopPropagation(); try{bgm&&bgm.pause();}catch(_){} try{actx&&actx.close();}catch(_){} location.href='index.html?intro=1'; });
 
     // ===================== DRAG / THROTTLE =====================
     const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0,0,1),0);
@@ -233,18 +284,11 @@
     updateBounds();
     function toWorld(cx,cy){ ndc.set((cx/window.innerWidth)*2-1, -(cy/window.innerHeight)*2+1); ray.setFromCamera(ndc,camera); ray.ray.intersectPlane(plane,hitv); return hitv; }
     const hint = document.getElementById('hint');
-    canvas.addEventListener('pointerdown', (e)=>{ dragging=true; canvas.classList.add('grabbing'); hint.style.opacity='0'; startBgm();
+    canvas.addEventListener('pointerdown', (e)=>{ dragging=true; canvas.classList.add('grabbing'); hint.style.opacity='0'; startBgm(); startEngineSound();
       const w=toWorld(e.clientX,e.clientY); tx=Math.max(-xmax,Math.min(xmax,w.x)); ty=Math.max(-ymax,Math.min(ymax,w.y)); try{canvas.setPointerCapture(e.pointerId);}catch(_){} });
     canvas.addEventListener('pointermove', (e)=>{ if(!dragging)return; const w=toWorld(e.clientX,e.clientY); tx=Math.max(-xmax,Math.min(xmax,w.x)); ty=Math.max(-ymax,Math.min(ymax,w.y)); });
     function release(){ dragging=false; canvas.classList.remove('grabbing'); }
     canvas.addEventListener('pointerup', release); canvas.addEventListener('pointercancel', release);
-
-    const bgm = document.getElementById('bgm'); let started=false;
-    function startBgm(){ if(started||!bgm)return; started=true; bgm.volume=0.5; bgm.play().catch(()=>{}); }
-    window.addEventListener('keydown', startBgm);
-    const mute = document.getElementById('muteBtn');
-    mute.addEventListener('click', (e)=>{ e.stopPropagation(); if(!bgm)return; bgm.muted=!bgm.muted; mute.textContent=bgm.muted?'\u2715':'\u266a'; mute.classList.toggle('off',bgm.muted); });
-    document.getElementById('exitBtn').addEventListener('click', (e)=>{ e.stopPropagation(); try{bgm&&bgm.pause();}catch(_){} location.href='index.html?intro=1'; });
 
     window.addEventListener('resize', ()=>{ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth,window.innerHeight); composer.setSize(window.innerWidth,window.innerHeight); updateBounds(); });
@@ -261,31 +305,29 @@
       let t=(ship.position.x+xmax)/(2*xmax); t=Math.max(0,Math.min(1,t));
       throttle += (0.05 + t*t*0.95 - throttle)*0.08*dt;
 
-      // streaks
       streakDist = (streakDist + (0.4 + throttle*throttle*6.0)*dt) % RANGE;
       streakMat.uniforms.uDist.value = streakDist;
       streakMat.uniforms.uSpeed.value = throttle;
 
-      // plume length pulses (irregular)
       const pulse = 1.0 + 0.16*Math.sin(tsec*9.0) + 0.09*Math.sin(tsec*22.0+1.3);
       const plen = (0.5 + throttle*3.6) * pulse;
-      const pwid = 0.45 + throttle*0.55;
+      const pwid = 0.42 + throttle*0.5;
       plume.scale.set(plen, pwid, 1);
       plume.position.x = NOZZLE - plen*0.5;
       plumeMat.uniforms.uTime.value = tsec;
       plumeMat.uniforms.uThrottle.value = throttle;
 
-      // soft glow + light
-      const flick = 0.9 + Math.random()*0.2;
-      glowMat.uniforms.uInt.value = (0.25 + throttle*0.7)*flick;
-      glow.scale.setScalar((0.5 + throttle*1.4)*flick);
-      engineLight.intensity = throttle*7;
+      const flick = 0.92 + Math.random()*0.16;
+      glowMat.uniforms.uInt.value = (0.14 + throttle*0.42)*flick;
+      glow.scale.setScalar((0.32 + throttle*0.85)*flick);
+      engineLight.intensity = throttle*5;
       engineLight.position.set(ship.position.x + NOZZLE - 0.3, ship.position.y, 0);
 
       if (shipModel) ship.rotation.z = -throttle*0.1 + (dragging?0:Math.sin(now/1200)*0.02);
       camera.position.x = (Math.sin(now/55)+Math.sin(now/97))*throttle*0.04;
       camera.lookAt(0,0,0);
       grade.uniforms.uAmt.value = throttle;
+      updateEngineSound(throttle);
 
       composer.render();
     }
