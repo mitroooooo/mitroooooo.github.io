@@ -54,13 +54,19 @@
     import * as THREE from 'three';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+    const isMobile = window.innerWidth < 760 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 
     const canvas = document.getElementById('scene');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.15;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const scene = new THREE.Scene();
@@ -71,7 +77,13 @@
     camera.position.set(0, 1.0, 7.6);
     camera.lookAt(0, 0, 0);
 
-    // bright environment so the metal shines
+    // bloom post-processing — the premium glow
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), isMobile ? 0.7 : 1.0, 0.55, 0.82);
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
+
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
 
@@ -81,19 +93,11 @@
     const fill = new THREE.PointLight(0xffffff, 40, 30); fill.position.set(0, 2, 6); scene.add(fill);
     const engineLight = new THREE.PointLight(0x66ccff, 0, 16, 2); scene.add(engineLight);
 
-    // ship + flame group
     const ship = new THREE.Group();
     ship.position.set(-2.4, 0, 0);
     scene.add(ship);
     let shipModel = null;
-
-    // exhaust flame (points -X, behind the ship)
-    const flame = new THREE.Mesh(new THREE.ConeGeometry(0.13, 1, 18),
-      new THREE.MeshBasicMaterial({ color: 0xFFCC44, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
-    flame.rotation.z = Math.PI / 2; flame.position.set(-0.95, 0, 0); ship.add(flame);
-    const flameCore = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.8, 18),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
-    flameCore.rotation.z = Math.PI / 2; flameCore.position.set(-0.8, 0, 0); ship.add(flameCore);
+    const NOZZLE = -0.5;   // engine x in ship-local space (rear, after flipping nose to +X)
 
     new GLTFLoader().load('ship.glb', (gltf) => {
       const m = gltf.scene;
@@ -102,9 +106,9 @@
       const center = box.getCenter(new THREE.Vector3());
       m.position.sub(center);
       const maxDim = Math.max(size.x, size.y, size.z) || 1;
-      m.scale.setScalar(1.3 / maxDim);      // smaller ship
-      m.rotation.y = -Math.PI / 2;           // nose -> +X (screen right) — adjustable
-      m.traverse((o) => {                    // make it shiny / metallic
+      m.scale.setScalar(1.3 / maxDim);
+      m.rotation.y = Math.PI / 2;            // nose -> +X (screen RIGHT), engines -> -X (rear)
+      m.traverse((o) => {
         if (o.isMesh && o.material) {
           const mat = o.material;
           mat.envMapIntensity = 2.0;
@@ -117,8 +121,54 @@
       document.getElementById('loading').style.display = 'none';
     }, undefined, () => { document.getElementById('loading').textContent = 'ship.glb not found'; });
 
+    // soft round glow texture for particles + core
+    function glowTex() {
+      const c = document.createElement('canvas'); c.width = c.height = 64;
+      const g = c.getContext('2d');
+      const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grd.addColorStop(0.0, 'rgba(255,255,255,1)');
+      grd.addColorStop(0.25, 'rgba(220,240,255,0.85)');
+      grd.addColorStop(0.55, 'rgba(140,200,255,0.35)');
+      grd.addColorStop(1.0, 'rgba(70,130,255,0)');
+      g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+    }
+    const tex = glowTex();
+
+    // hot core sprite at the nozzle (blooms strongly)
+    const core = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xbfe0ff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+    core.position.set(NOZZLE, 0, 0); ship.add(core);
+
+    // plasma exhaust — GPU particles streaming backward (-X)
+    const P = isMobile ? 170 : 280;
+    const pPos = new Float32Array(P * 3), pSize = new Float32Array(P), pCol = new Float32Array(P * 3);
+    const life = new Float32Array(P), maxLife = new Float32Array(P), vel = new Float32Array(P * 3);
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    pGeo.setAttribute('size', new THREE.BufferAttribute(pSize, 1));
+    pGeo.setAttribute('acolor', new THREE.BufferAttribute(pCol, 3));
+    const pMat = new THREE.ShaderMaterial({
+      uniforms: { uTex: { value: tex } },
+      vertexShader: 'attribute float size; attribute vec3 acolor; varying vec3 vColor; void main(){ vColor=acolor; vec4 mv=modelViewMatrix*vec4(position,1.0); gl_PointSize=size*(300.0/-mv.z); gl_Position=projectionMatrix*mv; }',
+      fragmentShader: 'uniform sampler2D uTex; varying vec3 vColor; void main(){ vec4 t=texture2D(uTex, gl_PointCoord); gl_FragColor=vec4(vColor,1.0)*t; }',
+      transparent: true, blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const plume = new THREE.Points(pGeo, pMat); plume.frustumCulled = false; ship.add(plume);
+    let throttle = 0.12, emitAcc = 0;
+    function spawn(i) {
+      const sp = 2.2 + throttle * 7;
+      vel[i*3] = -sp * (0.7 + Math.random() * 0.5);
+      vel[i*3+1] = (Math.random()-0.5) * 0.5 * (0.4 + throttle);
+      vel[i*3+2] = (Math.random()-0.5) * 0.5 * (0.4 + throttle);
+      pPos[i*3] = NOZZLE + (Math.random()-0.5) * 0.05;
+      pPos[i*3+1] = (Math.random()-0.5) * 0.1;
+      pPos[i*3+2] = (Math.random()-0.5) * 0.1;
+      maxLife[i] = 0.3 + Math.random() * 0.35; life[i] = maxLife[i];
+    }
+
     // hyperspace streaks
-    const N = 700, R = 60, SPREAD = 15;
+    const N = isMobile ? 420 : 700, R = 60, SPREAD = isMobile ? 11 : 15;
+    const LENMAX = isMobile ? 24 : 46, LENF = isMobile ? 0.55 : 1.0;
     const star = [];
     for (let i = 0; i < N; i++) star.push({ x: (Math.random()*2-1)*R, y: (Math.random()*2-1)*SPREAD, z: (Math.random()*2-1)*SPREAD });
     const geom = new THREE.BufferGeometry();
@@ -127,23 +177,19 @@
     const streaks = new THREE.LineSegments(geom, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
     scene.add(streaks);
 
-    // drag the ship anywhere on the screen; throttle comes from its X position
+    // drag the ship anywhere; throttle from its X position
     const ray = new THREE.Raycaster();
     const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-    const ndc = new THREE.Vector2();
-    const hit = new THREE.Vector3();
+    const ndc = new THREE.Vector2(), hit = new THREE.Vector3();
     let dragging = false, tx = ship.position.x, ty = 0, xmax = 6, ymax = 3;
     function updateBounds() {
       const vH = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
-      const vW = vH * camera.aspect;
-      xmax = vW * 0.42; ymax = vH * 0.40;
+      const vW = vH * camera.aspect; xmax = vW * 0.42; ymax = vH * 0.40;
     }
     updateBounds();
     function toWorld(cx, cy) {
       ndc.set((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
-      ray.setFromCamera(ndc, camera);
-      ray.ray.intersectPlane(plane, hit);
-      return hit;
+      ray.setFromCamera(ndc, camera); ray.ray.intersectPlane(plane, hit); return hit;
     }
     const hint = document.getElementById('hint');
     canvas.addEventListener('pointerdown', (e) => {
@@ -159,7 +205,6 @@
     canvas.addEventListener('pointerup', release);
     canvas.addEventListener('pointercancel', release);
 
-    // audio + exit
     const bgm = document.getElementById('bgm');
     let started = false;
     function startBgm(){ if (started || !bgm) return; started = true; bgm.volume = 0.5; bgm.play().catch(()=>{}); }
@@ -170,18 +215,18 @@
 
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight); updateBounds();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight); updateBounds();
     });
 
-    let throttle = 0.12, last = performance.now();
+    let last = performance.now();
     function animate(){
       requestAnimationFrame(animate);
-      const now = performance.now(); const dt = Math.min((now - last) / 16.67, 3); last = now;
+      const now = performance.now(); const ms = now - last; last = now;
+      const dt = Math.min(ms / 16.67, 3), dts = Math.min(ms / 1000, 0.05);
 
-      // ship glides toward the drag target (inertia = "alive")
       ship.position.x += (tx - ship.position.x) * 0.18 * dt;
       ship.position.y += (ty - ship.position.y) * 0.18 * dt;
-      // throttle from horizontal position: left = slow, right = fast
       let t = (ship.position.x + xmax) / (2 * xmax); t = Math.max(0, Math.min(1, t));
       const tTarget = 0.05 + t * t * 0.95;
       throttle += (tTarget - throttle) * 0.08 * dt;
@@ -193,7 +238,7 @@
         const s = star[i];
         s.x -= speed * dt;
         if (s.x < -R) { s.x = R; s.y = (Math.random()*2-1)*SPREAD; s.z = (Math.random()*2-1)*SPREAD; }
-        const len = Math.min(46, speed * dt * 1.2 + throttle * throttle * 26 + 0.25);
+        const len = Math.min(LENMAX, (speed * dt * 1.2 + throttle * throttle * 26 + 0.25) * LENF);
         const j = i * 6;
         pos[j] = s.x; pos[j+1] = s.y; pos[j+2] = s.z;
         pos[j+3] = s.x + len; pos[j+4] = s.y; pos[j+5] = s.z;
@@ -203,22 +248,34 @@
         col[j+1] = col[j+4] = b * (1 - blue * 0.12);
         col[j+2] = col[j+5] = b;
       }
-      geom.attributes.position.needsUpdate = true;
-      geom.attributes.color.needsUpdate = true;
+      geom.attributes.position.needsUpdate = true; geom.attributes.color.needsUpdate = true;
 
-      // flame grows with throttle (+ flicker)
+      // exhaust particles
+      emitAcc += (throttle > 0.05 ? (40 + throttle * 240) : 0) * dts;
+      for (let i = 0; i < P && emitAcc >= 1; i++) { if (life[i] <= 0) { spawn(i); emitAcc -= 1; } }
+      for (let i = 0; i < P; i++) {
+        if (life[i] > 0) {
+          life[i] -= dts;
+          pPos[i*3] += vel[i*3]*dts; pPos[i*3+1] += vel[i*3+1]*dts; pPos[i*3+2] += vel[i*3+2]*dts;
+          const a = Math.max(0, life[i] / maxLife[i]);
+          pSize[i] = (0.35 + throttle * 1.15) * (0.25 + a * 0.9);
+          const hot = a * a;
+          pCol[i*3] = 0.45 + hot * 0.55; pCol[i*3+1] = 0.65 + hot * 0.35; pCol[i*3+2] = 1.0;
+        } else { pSize[i] = 0; }
+      }
+      pGeo.attributes.position.needsUpdate = true; pGeo.attributes.size.needsUpdate = true; pGeo.attributes.acolor.needsUpdate = true;
+
       const flick = 0.85 + Math.random() * 0.3;
-      const fl = (0.4 + throttle * 3.4) * flick;
-      flame.scale.set(1, fl, 1); flame.material.opacity = 0.35 + throttle * 0.5;
-      flameCore.scale.set(1, (0.3 + throttle * 2.6) * flick, 1); flameCore.material.opacity = 0.5 + throttle * 0.45;
+      core.scale.setScalar((0.25 + throttle * 1.2) * flick);
+      core.material.opacity = 0.45 + throttle * 0.5;
       engineLight.intensity = throttle * 9;
-      engineLight.position.set(ship.position.x - 0.9, ship.position.y, 0);
+      engineLight.position.set(ship.position.x + NOZZLE - 0.3, ship.position.y, 0);
 
       if (shipModel) ship.rotation.z = -throttle * 0.12 + (dragging ? 0 : Math.sin(now / 1200) * 0.025);
       camera.position.x = Math.sin(now / 60) * throttle * 0.06;
       camera.lookAt(0, 0, 0);
 
-      renderer.render(scene, camera);
+      composer.render();
     }
     animate();
   </script>
