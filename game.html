@@ -10,26 +10,18 @@
     html, body { height: 100%; background: #000; overflow: hidden; font-family: 'Inter', sans-serif; }
     #scene { position: fixed; inset: 0; display: block; cursor: grab; touch-action: none; }
     #scene.grabbing { cursor: grabbing; }
-    .game-btn {
-      position: fixed; z-index: 30; cursor: pointer;
-      background: rgba(0,0,0,0.35); color: #fff; border: 1px solid rgba(255,255,255,0.5);
-      border-radius: 4px; font-family: 'Inter', sans-serif; font-weight: 500; letter-spacing: 0.18em;
-      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      transition: color .2s, border-color .2s, background .2s;
-    }
+    .game-btn { position: fixed; z-index: 30; cursor: pointer; background: rgba(0,0,0,0.35); color: #fff;
+      border: 1px solid rgba(255,255,255,0.5); border-radius: 4px; font-family: 'Inter', sans-serif; font-weight: 500;
+      letter-spacing: 0.18em; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      transition: color .2s, border-color .2s, background .2s; }
     .game-btn:hover { color: #FFFC52; border-color: rgba(255,252,82,0.8); }
     #exitBtn { top: 18px; right: 18px; padding: 9px 18px; font-size: 13px; }
     #muteBtn { top: 18px; left: 18px; width: 38px; height: 38px; font-size: 16px; padding: 0; line-height: 1; }
     #muteBtn.off { color: #888; }
-    #hint {
-      position: fixed; left: 0; right: 0; bottom: 26px; z-index: 20; text-align: center;
-      font-size: 12px; letter-spacing: 0.18em; color: rgba(255,255,255,0.5); pointer-events: none;
-      transition: opacity .6s ease;
-    }
-    #loading {
-      position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;
-      background: #000; color: #fff; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.3em; font-size: 28px;
-    }
+    #hint { position: fixed; left: 0; right: 0; bottom: 26px; z-index: 20; text-align: center; font-size: 12px;
+      letter-spacing: 0.18em; color: rgba(255,255,255,0.5); pointer-events: none; transition: opacity .6s ease; }
+    #loading { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;
+      background: #000; color: #fff; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.3em; font-size: 28px; }
     .credit { position: fixed; bottom: 8px; right: 12px; z-index: 20; font-size: 10px; letter-spacing: 0.06em; color: #fff; opacity: 0.35; font-family: 'Bebas Neue', sans-serif; }
   </style>
 </head>
@@ -43,12 +35,10 @@
   <audio id="bgm" src="game_track.mp3" loop preload="auto"></audio>
 
   <script type="importmap">
-  {
-    "imports": {
+  { "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-    }
-  }
+  } }
   </script>
   <script type="module">
     import * as THREE from 'three';
@@ -57,223 +47,245 @@
     import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
     import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
     import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
     const isMobile = window.innerWidth < 760 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 
+    // ---- shared GLSL: Ashima 3D simplex noise + fbm ----
+    const NOISE = `
+      vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+      vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+      vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+      vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+      float snoise(vec3 v){
+        const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);
+        vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+        vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+        vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy; i=mod289(i);
+        vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+        float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+        vec4 j=p-49.0*floor(p*ns.z*ns.z); vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);
+        vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);
+        vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+        vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));
+        vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+        vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+        vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+        p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+        vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;
+        return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+      }
+      float fbm(vec3 p){ float f=0.0,a=0.5; for(int i=0;i<4;i++){ f+=a*snoise(p); p*=2.0; a*=0.5; } return f*0.5+0.5; }
+    `;
+
     const canvas = document.getElementById('scene');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 0.95;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000007);
-    scene.fog = new THREE.FogExp2(0x000010, 0.006);
+    scene.background = new THREE.Color(0x000005);
+    scene.fog = new THREE.FogExp2(0x000008, 0.012);
 
     const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 3000);
-    camera.position.set(0, 1.0, 7.6);
-    camera.lookAt(0, 0, 0);
-
-    // bloom post-processing — the premium glow
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), isMobile ? 0.7 : 1.0, 0.55, 0.82);
-    composer.addPass(bloom);
-    composer.addPass(new OutputPass());
+    camera.position.set(0, 1.0, 7.6); camera.lookAt(0, 0, 0);
 
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
-
     scene.add(new THREE.HemisphereLight(0x88aaff, 0x080816, 0.6));
     const key = new THREE.DirectionalLight(0xffffff, 3.0); key.position.set(4, 6, 5); scene.add(key);
     const rim = new THREE.DirectionalLight(0x99ccff, 2.0); rim.position.set(-5, 1, -4); scene.add(rim);
-    const fill = new THREE.PointLight(0xffffff, 40, 30); fill.position.set(0, 2, 6); scene.add(fill);
-    const engineLight = new THREE.PointLight(0x66ccff, 0, 16, 2); scene.add(engineLight);
+    const engineLight = new THREE.PointLight(0xffd28a, 0, 16, 2); scene.add(engineLight);
 
-    const ship = new THREE.Group();
-    ship.position.set(-2.4, 0, 0);
-    scene.add(ship);
-    let shipModel = null;
-    const NOZZLE = -0.5;   // engine x in ship-local space (rear, after flipping nose to +X)
-
+    // ===================== SHIP =====================
+    const ship = new THREE.Group(); ship.position.set(-2.4, 0, 0); scene.add(ship);
+    let shipModel = null; const NOZZLE = -0.5;
     new GLTFLoader().load('ship.glb', (gltf) => {
       const m = gltf.scene;
       const box = new THREE.Box3().setFromObject(m);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
       m.position.sub(center);
-      const maxDim = Math.max(size.x, size.y, size.z) || 1;
-      m.scale.setScalar(1.3 / maxDim);
-      m.rotation.y = Math.PI / 2;            // nose -> +X (screen RIGHT), engines -> -X (rear)
-      m.traverse((o) => {
-        if (o.isMesh && o.material) {
-          const mat = o.material;
-          mat.envMapIntensity = 2.0;
-          if (mat.roughness !== undefined) mat.roughness = Math.min(mat.roughness * 0.55, 0.4);
-          if (mat.metalness !== undefined) mat.metalness = Math.max(mat.metalness, 0.55);
-          mat.needsUpdate = true;
-        }
-      });
-      ship.add(m); shipModel = m;
-      document.getElementById('loading').style.display = 'none';
+      m.scale.setScalar(1.3 / (Math.max(size.x, size.y, size.z) || 1));
+      m.rotation.y = Math.PI / 2;                 // nose -> +X (right)
+      m.traverse((o) => { if (o.isMesh && o.material) { const mt = o.material;
+        mt.envMapIntensity = 1.9; if (mt.roughness !== undefined) mt.roughness = Math.min(mt.roughness * 0.55, 0.4);
+        if (mt.metalness !== undefined) mt.metalness = Math.max(mt.metalness, 0.55); mt.needsUpdate = true; } });
+      ship.add(m); shipModel = m; document.getElementById('loading').style.display = 'none';
     }, undefined, () => { document.getElementById('loading').textContent = 'ship.glb not found'; });
 
-    // soft round glow texture for particles + core
-    function glowTex() {
-      const c = document.createElement('canvas'); c.width = c.height = 64;
-      const g = c.getContext('2d');
-      const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-      grd.addColorStop(0.0, 'rgba(255,255,255,1)');
-      grd.addColorStop(0.25, 'rgba(220,240,255,0.85)');
-      grd.addColorStop(0.55, 'rgba(140,200,255,0.35)');
-      grd.addColorStop(1.0, 'rgba(70,130,255,0)');
-      g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
-      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+    // ===================== STREAKS (instanced glowing light-rays) =====================
+    const COUNT = isMobile ? 460 : 1200, RANGE = 150;
+    const base = new THREE.PlaneGeometry(1, 1);
+    const sGeo = new THREE.InstancedBufferGeometry();
+    sGeo.index = base.index;
+    sGeo.setAttribute('position', base.attributes.position);
+    sGeo.setAttribute('uv', base.attributes.uv);
+    const offs = new Float32Array(COUNT * 3), mets = new Float32Array(COUNT * 2), seeds = new Float32Array(COUNT);
+    for (let i = 0; i < COUNT; i++) {
+      offs[i*3] = (Math.random()*2-1)*RANGE*0.5;
+      offs[i*3+1] = (Math.random()*2-1)*9.0;
+      offs[i*3+2] = (Math.random()*2-1)*16.0;
+      mets[i*2] = 1.6 + Math.random()*4.0;        // base half-length
+      mets[i*2+1] = 0.015 + Math.random()*0.05;   // thickness
+      seeds[i] = Math.random();
     }
-    const tex = glowTex();
-
-    // hot core sprite at the nozzle (blooms strongly)
-    const core = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xbfe0ff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
-    core.position.set(NOZZLE, 0, 0); ship.add(core);
-
-    // plasma exhaust — GPU particles streaming backward (-X)
-    const P = isMobile ? 170 : 280;
-    const pPos = new Float32Array(P * 3), pSize = new Float32Array(P), pCol = new Float32Array(P * 3);
-    const life = new Float32Array(P), maxLife = new Float32Array(P), vel = new Float32Array(P * 3);
-    const pGeo = new THREE.BufferGeometry();
-    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-    pGeo.setAttribute('size', new THREE.BufferAttribute(pSize, 1));
-    pGeo.setAttribute('acolor', new THREE.BufferAttribute(pCol, 3));
-    const pMat = new THREE.ShaderMaterial({
-      uniforms: { uTex: { value: tex } },
-      vertexShader: 'attribute float size; attribute vec3 acolor; varying vec3 vColor; void main(){ vColor=acolor; vec4 mv=modelViewMatrix*vec4(position,1.0); gl_PointSize=size*(300.0/-mv.z); gl_Position=projectionMatrix*mv; }',
-      fragmentShader: 'uniform sampler2D uTex; varying vec3 vColor; void main(){ vec4 t=texture2D(uTex, gl_PointCoord); gl_FragColor=vec4(vColor,1.0)*t; }',
-      transparent: true, blending: THREE.AdditiveBlending, depthWrite: false
+    sGeo.setAttribute('aOffset', new THREE.InstancedBufferAttribute(offs, 3));
+    sGeo.setAttribute('aMetrics', new THREE.InstancedBufferAttribute(mets, 2));
+    sGeo.setAttribute('aSeed', new THREE.InstancedBufferAttribute(seeds, 1));
+    sGeo.instanceCount = COUNT;
+    const streakMat = new THREE.ShaderMaterial({
+      uniforms: { uDist: { value: 0 }, uSpeed: { value: 0.1 }, uRange: { value: RANGE }, uCore: { value: new THREE.Color(0xcfe6ff) } },
+      vertexShader: `
+        attribute vec3 aOffset; attribute vec2 aMetrics; attribute float aSeed;
+        uniform float uDist, uSpeed, uRange;
+        varying vec2 vUv; varying float vSeed; varying float vBright;
+        void main(){
+          vUv = uv; vSeed = aSeed;
+          float len = aMetrics.x * (0.5 + uSpeed*3.2);
+          vec3 p = position; p.x *= len; p.y *= aMetrics.y;
+          float spd = uDist * (0.6 + aSeed*0.9);
+          float x = mod(aOffset.x - spd + uRange*0.5, uRange) - uRange*0.5;
+          p.x += x; p.y += aOffset.y; p.z += aOffset.z;
+          vBright = clamp(0.3 + (aOffset.z + 16.0)/32.0 * 0.7, 0.1, 1.0);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+        }`,
+      fragmentShader: `
+        uniform vec3 uCore; varying vec2 vUv; varying float vSeed; varying float vBright;
+        void main(){
+          float ends = smoothstep(0.0,0.18,vUv.x)*smoothstep(1.0,0.82,vUv.x);
+          float core = pow(smoothstep(0.5,0.0,abs(vUv.y-0.5)), 1.6);
+          vec3 tint = mix(vec3(0.78,0.88,1.0), vec3(1.0,0.95,0.86), vSeed*vSeed);
+          float a = ends*core*vBright;
+          gl_FragColor = vec4(uCore*tint*a*1.4, a);
+        }`,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide, fog: false
     });
-    const plume = new THREE.Points(pGeo, pMat); plume.frustumCulled = false; ship.add(plume);
-    let throttle = 0.12, emitAcc = 0;
-    function spawn(i) {
-      const sp = 2.2 + throttle * 7;
-      vel[i*3] = -sp * (0.7 + Math.random() * 0.5);
-      vel[i*3+1] = (Math.random()-0.5) * 0.5 * (0.4 + throttle);
-      vel[i*3+2] = (Math.random()-0.5) * 0.5 * (0.4 + throttle);
-      pPos[i*3] = NOZZLE + (Math.random()-0.5) * 0.05;
-      pPos[i*3+1] = (Math.random()-0.5) * 0.1;
-      pPos[i*3+2] = (Math.random()-0.5) * 0.1;
-      maxLife[i] = 0.3 + Math.random() * 0.35; life[i] = maxLife[i];
-    }
+    const streaks = new THREE.Mesh(sGeo, streakMat); streaks.frustumCulled = false; scene.add(streaks);
+    let streakDist = 0;
 
-    // hyperspace streaks
-    const N = isMobile ? 420 : 700, R = 60, SPREAD = isMobile ? 11 : 15;
-    const LENMAX = isMobile ? 24 : 46, LENF = isMobile ? 0.55 : 1.0;
-    const star = [];
-    for (let i = 0; i < N; i++) star.push({ x: (Math.random()*2-1)*R, y: (Math.random()*2-1)*SPREAD, z: (Math.random()*2-1)*SPREAD });
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N*6), 3));
-    geom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N*6), 3));
-    const streaks = new THREE.LineSegments(geom, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
-    scene.add(streaks);
+    // ===================== EXHAUST PLUME (procedural fbm plasma) =====================
+    const plumeMat = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uThrottle: { value: 0 } },
+      vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+      fragmentShader: NOISE + `
+        uniform float uTime, uThrottle; varying vec2 vUv;
+        void main(){
+          float along = 1.0 - vUv.x;            // 0 nozzle(right) .. 1 tail(left)
+          float cy = vUv.y - 0.5;
+          float width = mix(0.46, 0.05, along);
+          float body = smoothstep(width, 0.0, abs(cy));
+          float n = fbm(vec3(vUv.x*3.5, vUv.y*3.0, uTime*1.6));
+          float life = (1.0-along);
+          float heat = clamp(life*1.25 + (n-0.5)*0.7, 0.0, 1.0) * uThrottle;
+          vec3 blue = vec3(0.30,0.6,1.0);
+          vec3 gold = vec3(1.0,0.72,0.22);
+          vec3 white= vec3(1.0,0.96,0.85);
+          vec3 col = mix(blue, gold, smoothstep(0.0,0.22,along));   // blue only right at the nozzle
+          col = mix(col, white, smoothstep(0.5,1.0,heat));          // white-hot core
+          float a = body*heat;
+          gl_FragColor = vec4(col*a*1.9, a);
+        }`,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide
+    });
+    const plume = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), plumeMat);
+    plume.position.z = 0.02; ship.add(plume);
 
-    // drag the ship anywhere; throttle from its X position
-    const ray = new THREE.Raycaster();
-    const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-    const ndc = new THREE.Vector2(), hit = new THREE.Vector3();
+    // soft engine glow (procedural radial falloff — no texture, no square edge)
+    const glowMat = new THREE.ShaderMaterial({
+      uniforms: { uColor: { value: new THREE.Color(0xffd9a0) }, uInt: { value: 0 } },
+      vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+      fragmentShader: `uniform vec3 uColor; uniform float uInt; varying vec2 vUv;
+        void main(){ float d=distance(vUv,vec2(0.5)); float a=pow(smoothstep(0.5,0.0,d),1.7)*uInt; gl_FragColor=vec4(uColor*a,a); }`,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false
+    });
+    const glow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), glowMat);
+    glow.position.set(NOZZLE, 0, 0.03); ship.add(glow);
+
+    // ===================== POST =====================
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), isMobile ? 0.55 : 0.75, 0.5, 0.7);
+    composer.addPass(bloom);
+    const grade = new ShaderPass({
+      uniforms: { tDiffuse: { value: null }, uAmt: { value: 0 } },
+      vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+      fragmentShader: `uniform sampler2D tDiffuse; uniform float uAmt; varying vec2 vUv;
+        void main(){
+          vec2 dir = vUv-0.5; float d=length(dir);
+          float ca=(0.0012+uAmt*0.009)*d;
+          vec3 c; c.r=texture2D(tDiffuse,vUv-dir*ca).r; c.g=texture2D(tDiffuse,vUv).g; c.b=texture2D(tDiffuse,vUv+dir*ca).b;
+          float vig=smoothstep(0.95,0.32,d); c*=mix(0.55,1.0,vig);
+          gl_FragColor=vec4(c,1.0);
+        }`
+    });
+    composer.addPass(grade);
+    composer.addPass(new OutputPass());
+
+    // ===================== DRAG / THROTTLE =====================
+    const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0,0,1),0);
+    const ndc = new THREE.Vector2(), hitv = new THREE.Vector3();
     let dragging = false, tx = ship.position.x, ty = 0, xmax = 6, ymax = 3;
-    function updateBounds() {
-      const vH = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
-      const vW = vH * camera.aspect; xmax = vW * 0.42; ymax = vH * 0.40;
-    }
+    function updateBounds(){ const vH=2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*camera.position.z; const vW=vH*camera.aspect; xmax=vW*0.42; ymax=vH*0.40; }
     updateBounds();
-    function toWorld(cx, cy) {
-      ndc.set((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
-      ray.setFromCamera(ndc, camera); ray.ray.intersectPlane(plane, hit); return hit;
-    }
+    function toWorld(cx,cy){ ndc.set((cx/window.innerWidth)*2-1, -(cy/window.innerHeight)*2+1); ray.setFromCamera(ndc,camera); ray.ray.intersectPlane(plane,hitv); return hitv; }
     const hint = document.getElementById('hint');
-    canvas.addEventListener('pointerdown', (e) => {
-      dragging = true; canvas.classList.add('grabbing'); hint.style.opacity = '0'; startBgm();
-      const w = toWorld(e.clientX, e.clientY); tx = Math.max(-xmax, Math.min(xmax, w.x)); ty = Math.max(-ymax, Math.min(ymax, w.y));
-      try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
-    });
-    canvas.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const w = toWorld(e.clientX, e.clientY); tx = Math.max(-xmax, Math.min(xmax, w.x)); ty = Math.max(-ymax, Math.min(ymax, w.y));
-    });
-    function release(){ dragging = false; canvas.classList.remove('grabbing'); }
-    canvas.addEventListener('pointerup', release);
-    canvas.addEventListener('pointercancel', release);
+    canvas.addEventListener('pointerdown', (e)=>{ dragging=true; canvas.classList.add('grabbing'); hint.style.opacity='0'; startBgm();
+      const w=toWorld(e.clientX,e.clientY); tx=Math.max(-xmax,Math.min(xmax,w.x)); ty=Math.max(-ymax,Math.min(ymax,w.y)); try{canvas.setPointerCapture(e.pointerId);}catch(_){} });
+    canvas.addEventListener('pointermove', (e)=>{ if(!dragging)return; const w=toWorld(e.clientX,e.clientY); tx=Math.max(-xmax,Math.min(xmax,w.x)); ty=Math.max(-ymax,Math.min(ymax,w.y)); });
+    function release(){ dragging=false; canvas.classList.remove('grabbing'); }
+    canvas.addEventListener('pointerup', release); canvas.addEventListener('pointercancel', release);
 
-    const bgm = document.getElementById('bgm');
-    let started = false;
-    function startBgm(){ if (started || !bgm) return; started = true; bgm.volume = 0.5; bgm.play().catch(()=>{}); }
+    const bgm = document.getElementById('bgm'); let started=false;
+    function startBgm(){ if(started||!bgm)return; started=true; bgm.volume=0.5; bgm.play().catch(()=>{}); }
     window.addEventListener('keydown', startBgm);
     const mute = document.getElementById('muteBtn');
-    mute.addEventListener('click', (e) => { e.stopPropagation(); if (!bgm) return; bgm.muted = !bgm.muted; mute.textContent = bgm.muted ? '\u2715' : '\u266a'; mute.classList.toggle('off', bgm.muted); });
-    document.getElementById('exitBtn').addEventListener('click', (e) => { e.stopPropagation(); try { bgm && bgm.pause(); } catch (_) {} location.href = 'index.html?intro=1'; });
+    mute.addEventListener('click', (e)=>{ e.stopPropagation(); if(!bgm)return; bgm.muted=!bgm.muted; mute.textContent=bgm.muted?'\u2715':'\u266a'; mute.classList.toggle('off',bgm.muted); });
+    document.getElementById('exitBtn').addEventListener('click', (e)=>{ e.stopPropagation(); try{bgm&&bgm.pause();}catch(_){} location.href='index.html?intro=1'; });
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      composer.setSize(window.innerWidth, window.innerHeight); updateBounds();
-    });
+    window.addEventListener('resize', ()=>{ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth,window.innerHeight); composer.setSize(window.innerWidth,window.innerHeight); updateBounds(); });
 
-    let last = performance.now();
+    // ===================== LOOP =====================
+    let throttle = 0.12, last = performance.now();
     function animate(){
       requestAnimationFrame(animate);
-      const now = performance.now(); const ms = now - last; last = now;
-      const dt = Math.min(ms / 16.67, 3), dts = Math.min(ms / 1000, 0.05);
+      const now = performance.now(); const ms = now-last; last = now;
+      const dt = Math.min(ms/16.67, 3), tsec = now/1000;
 
-      ship.position.x += (tx - ship.position.x) * 0.18 * dt;
-      ship.position.y += (ty - ship.position.y) * 0.18 * dt;
-      let t = (ship.position.x + xmax) / (2 * xmax); t = Math.max(0, Math.min(1, t));
-      const tTarget = 0.05 + t * t * 0.95;
-      throttle += (tTarget - throttle) * 0.08 * dt;
+      ship.position.x += (tx-ship.position.x)*0.18*dt;
+      ship.position.y += (ty-ship.position.y)*0.18*dt;
+      let t=(ship.position.x+xmax)/(2*xmax); t=Math.max(0,Math.min(1,t));
+      throttle += (0.05 + t*t*0.95 - throttle)*0.08*dt;
 
-      const speed = (0.55 + throttle * throttle * 15);
-      const pos = geom.attributes.position.array, col = geom.attributes.color.array;
-      const blue = throttle > 0.5 ? (throttle - 0.5) * 2 : 0;
-      for (let i = 0; i < N; i++) {
-        const s = star[i];
-        s.x -= speed * dt;
-        if (s.x < -R) { s.x = R; s.y = (Math.random()*2-1)*SPREAD; s.z = (Math.random()*2-1)*SPREAD; }
-        const len = Math.min(LENMAX, (speed * dt * 1.2 + throttle * throttle * 26 + 0.25) * LENF);
-        const j = i * 6;
-        pos[j] = s.x; pos[j+1] = s.y; pos[j+2] = s.z;
-        pos[j+3] = s.x + len; pos[j+4] = s.y; pos[j+5] = s.z;
-        const prox = 0.4 + 0.6 * ((s.z + SPREAD) / (2 * SPREAD));
-        const b = Math.min(1, 0.22 + throttle * 0.95) * prox;
-        col[j] = col[j+3] = b * (1 - blue * 0.45);
-        col[j+1] = col[j+4] = b * (1 - blue * 0.12);
-        col[j+2] = col[j+5] = b;
-      }
-      geom.attributes.position.needsUpdate = true; geom.attributes.color.needsUpdate = true;
+      // streaks
+      streakDist = (streakDist + (0.4 + throttle*throttle*6.0)*dt) % RANGE;
+      streakMat.uniforms.uDist.value = streakDist;
+      streakMat.uniforms.uSpeed.value = throttle;
 
-      // exhaust particles
-      emitAcc += (throttle > 0.05 ? (40 + throttle * 240) : 0) * dts;
-      for (let i = 0; i < P && emitAcc >= 1; i++) { if (life[i] <= 0) { spawn(i); emitAcc -= 1; } }
-      for (let i = 0; i < P; i++) {
-        if (life[i] > 0) {
-          life[i] -= dts;
-          pPos[i*3] += vel[i*3]*dts; pPos[i*3+1] += vel[i*3+1]*dts; pPos[i*3+2] += vel[i*3+2]*dts;
-          const a = Math.max(0, life[i] / maxLife[i]);
-          pSize[i] = (0.35 + throttle * 1.15) * (0.25 + a * 0.9);
-          const hot = a * a;
-          pCol[i*3] = 0.45 + hot * 0.55; pCol[i*3+1] = 0.65 + hot * 0.35; pCol[i*3+2] = 1.0;
-        } else { pSize[i] = 0; }
-      }
-      pGeo.attributes.position.needsUpdate = true; pGeo.attributes.size.needsUpdate = true; pGeo.attributes.acolor.needsUpdate = true;
+      // plume length pulses (irregular)
+      const pulse = 1.0 + 0.16*Math.sin(tsec*9.0) + 0.09*Math.sin(tsec*22.0+1.3);
+      const plen = (0.5 + throttle*3.6) * pulse;
+      const pwid = 0.45 + throttle*0.55;
+      plume.scale.set(plen, pwid, 1);
+      plume.position.x = NOZZLE - plen*0.5;
+      plumeMat.uniforms.uTime.value = tsec;
+      plumeMat.uniforms.uThrottle.value = throttle;
 
-      const flick = 0.85 + Math.random() * 0.3;
-      core.scale.setScalar((0.25 + throttle * 1.2) * flick);
-      core.material.opacity = 0.45 + throttle * 0.5;
-      engineLight.intensity = throttle * 9;
+      // soft glow + light
+      const flick = 0.9 + Math.random()*0.2;
+      glowMat.uniforms.uInt.value = (0.25 + throttle*0.7)*flick;
+      glow.scale.setScalar((0.5 + throttle*1.4)*flick);
+      engineLight.intensity = throttle*7;
       engineLight.position.set(ship.position.x + NOZZLE - 0.3, ship.position.y, 0);
 
-      if (shipModel) ship.rotation.z = -throttle * 0.12 + (dragging ? 0 : Math.sin(now / 1200) * 0.025);
-      camera.position.x = Math.sin(now / 60) * throttle * 0.06;
-      camera.lookAt(0, 0, 0);
+      if (shipModel) ship.rotation.z = -throttle*0.1 + (dragging?0:Math.sin(now/1200)*0.02);
+      camera.position.x = (Math.sin(now/55)+Math.sin(now/97))*throttle*0.04;
+      camera.lookAt(0,0,0);
+      grade.uniforms.uAmt.value = throttle;
 
       composer.render();
     }
