@@ -94,12 +94,14 @@
     camera.position.set(0, 1.0, 7.6); camera.lookAt(0, 0, 0);
 
     const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-    scene.add(new THREE.HemisphereLight(0xaaccff, 0x101018, 1.1));
-    const key = new THREE.DirectionalLight(0xffffff, 3.2); key.position.set(4, 6, 5); scene.add(key);
-    const rim = new THREE.DirectionalLight(0x99ccff, 2.2); rim.position.set(-5, 1, -4); scene.add(rim);
-    // strong camera-side fill so the ship is always lit by direct light (fixes black metal in Chrome)
-    const fill = new THREE.PointLight(0xffffff, 80, 60, 2); fill.position.set(1, 2, 8); scene.add(fill);
+    try { scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; } catch(e) {}
+    // Direct lights do the bulk of the lighting (identical in every browser, no dependency on the
+    // generated environment) so the metal ship is never black even if env generation fails in Chrome.
+    scene.add(new THREE.HemisphereLight(0xc2d8ff, 0x1a1a24, 2.2));
+    const key  = new THREE.DirectionalLight(0xffffff, 4.2); key.position.set(4, 6, 6);  scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffffff, 3.2); fill.position.set(2, 1, 9);  scene.add(fill);  // camera side
+    const rim  = new THREE.DirectionalLight(0xbfe0ff, 3.0); rim.position.set(-6, 2, -5);  scene.add(rim);
+    const top  = new THREE.DirectionalLight(0xffffff, 2.4); top.position.set(-1, 8, 1);   scene.add(top);
     const engineLight = new THREE.PointLight(0xffd28a, 0, 16, 2); scene.add(engineLight);
 
     // ===================== SHIP =====================
@@ -114,8 +116,12 @@
       m.scale.setScalar(1.3 / (Math.max(size.x, size.y, size.z) || 1));
       m.rotation.y = Math.PI / 2;                 // nose -> +X (right)
       m.traverse((o) => { if (o.isMesh && o.material) { const mt = o.material;
-        mt.envMapIntensity = 1.6;
-        if (mt.roughness !== undefined) mt.roughness = Math.min(mt.roughness, 0.6);
+        // env is now a bonus, not the only light source -> keep its influence modest
+        mt.envMapIntensity = 1.1;
+        // cap metalness and widen roughness so the directional lights produce broad visible
+        // reflections (a pure mirror-metal with no env reads as black where env is missing)
+        if (mt.metalness !== undefined) mt.metalness = Math.min(mt.metalness, 0.9);
+        if (mt.roughness !== undefined) mt.roughness = THREE.MathUtils.clamp(mt.roughness, 0.4, 0.62);
         mt.needsUpdate = true; } });
       ship.add(m); shipModel = m;
       // find the real nozzle: average the rear-most slice of vertices (the exhaust opening)
@@ -218,7 +224,7 @@
     // ===================== POST =====================
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), isMobile ? 0.5 : 0.6, 0.5, 0.75);
+    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), isMobile ? 0.4 : 0.5, 0.45, 0.82);
     composer.addPass(bloom);
     const grade = new ShaderPass({
       uniforms: { tDiffuse: { value: null }, uAmt: { value: 0 } },
