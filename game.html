@@ -105,7 +105,7 @@
     // ===================== SHIP =====================
     const ship = new THREE.Group(); ship.position.set(-2.4, 0, 0); scene.add(ship);
     let shipModel = null;
-    let NOZZLE = -0.5;                 // computed precisely from model bounds on load
+    let NOZZLE = -0.5, NOZZLE_Y = 0, NOZZLE_Z = 0;   // computed from model geometry on load
     new GLTFLoader().load('ship.glb', (gltf) => {
       const m = gltf.scene;
       const box = new THREE.Box3().setFromObject(m);
@@ -114,14 +114,27 @@
       m.scale.setScalar(1.3 / (Math.max(size.x, size.y, size.z) || 1));
       m.rotation.y = Math.PI / 2;                 // nose -> +X (right)
       m.traverse((o) => { if (o.isMesh && o.material) { const mt = o.material;
-        // keep the model's own metalness (do NOT force it high — that made it env-only -> black in Chrome)
         mt.envMapIntensity = 1.6;
         if (mt.roughness !== undefined) mt.roughness = Math.min(mt.roughness, 0.6);
         mt.needsUpdate = true; } });
       ship.add(m); shipModel = m;
-      // precise nozzle = rear-most point of the model in ship-local space
+      // find the real nozzle: average the rear-most slice of vertices (the exhaust opening)
+      m.updateWorldMatrix(true, true);
       const b = new THREE.Box3().setFromObject(m);
-      NOZZLE = (b.min.x - ship.position.x) + 0.06;
+      const rearX = b.min.x - ship.position.x;            // ship-local rear x
+      const band = (b.max.x - b.min.x) * 0.10;
+      const v = new THREE.Vector3(); let sx=0, sy=0, sz=0, cnt=0;
+      m.traverse((o) => { if (o.isMesh && o.geometry && o.geometry.attributes.position) {
+        const pos = o.geometry.attributes.position, step = Math.max(1, Math.floor(pos.count/2500));
+        for (let i=0; i<pos.count; i+=step) {
+          v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
+          const lx = v.x - ship.position.x;
+          if (lx <= rearX + band) { sx+=lx; sy+=(v.y-ship.position.y); sz+=(v.z-ship.position.z); cnt++; }
+        }
+      }});
+      if (cnt > 0) { NOZZLE = sx/cnt + 0.04; NOZZLE_Y = sy/cnt; NOZZLE_Z = sz/cnt; }
+      else { NOZZLE = rearX + 0.06; }
+      plume.position.set(NOZZLE - 0.5, NOZZLE_Y, NOZZLE_Z);   // anchored exactly to the nozzle
       document.getElementById('loading').style.display = 'none';
     }, undefined, () => { document.getElementById('loading').textContent = 'ship.glb not found'; });
 
@@ -273,14 +286,14 @@
       const plen = (0.5 + throttle*3.6) * pulse;
       const pwid = 0.42 + throttle*0.5;
       plume.scale.set(plen, pwid, 1);
-      plume.position.x = NOZZLE - plen*0.5;
+      plume.position.set(NOZZLE - plen*0.5, NOZZLE_Y, NOZZLE_Z);
       plumeMat.uniforms.uTime.value = tsec;
       plumeMat.uniforms.uThrottle.value = throttle;
 
       engineLight.intensity = throttle*4;
-      engineLight.position.set(ship.position.x + NOZZLE - 0.3, ship.position.y, 0);
+      engineLight.position.set(ship.position.x + NOZZLE - 0.3, ship.position.y + NOZZLE_Y, NOZZLE_Z);
 
-      if (shipModel) ship.rotation.z = -throttle*0.1 + (dragging?0:Math.sin(now/1200)*0.02);
+      ship.rotation.z = 0;   // ship stays strictly horizontal so the plume always lines up
       camera.position.x = (Math.sin(now/55)+Math.sin(now/97))*throttle*0.04;
       camera.lookAt(0,0,0);
       grade.uniforms.uAmt.value = throttle;
