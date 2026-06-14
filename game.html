@@ -31,7 +31,7 @@
   <div id="hint">DRAG THE SHIP &#160;&#183;&#160; &#8592; SLOWER &#160;&#160;|&#160;&#160; FASTER &#8594;</div>
   <button id="exitBtn" class="game-btn" aria-label="Exit to site">EXIT</button>
   <button id="muteBtn" class="game-btn" aria-label="Toggle music">&#9834;</button>
-  <div class="credit">THE MITRO</div>
+  <div class="credit">THE MITRO &#183; v6</div>
   <audio id="bgm" src="game_track.mp3" loop preload="auto"></audio>
 
   <script type="importmap">
@@ -97,18 +97,18 @@
     // in every browser. (Streaks/plume are unlit shaders and don't use the environment anyway.)
     scene.environment = null;
     // Direct lights do ALL the lighting (deterministic, browser-independent).
-    scene.add(new THREE.HemisphereLight(0xc2d8ff, 0x20202a, 1.8));
-    const key  = new THREE.DirectionalLight(0xffffff, 3.2); key.position.set(4, 6, 6);  scene.add(key);
-    const fill = new THREE.DirectionalLight(0xffffff, 2.6); fill.position.set(2, 1, 9);  scene.add(fill);  // camera side
-    const rim  = new THREE.DirectionalLight(0xbfe0ff, 2.4); rim.position.set(-6, 2, -5);  scene.add(rim);
-    const top  = new THREE.DirectionalLight(0xffffff, 2.0); top.position.set(-1, 8, 1);   scene.add(top);
+    scene.add(new THREE.HemisphereLight(0xc2d8ff, 0x20202a, 1.2));
+    const key  = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(4, 6, 6);  scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffffff, 2.0); fill.position.set(2, 1, 9);  scene.add(fill);  // camera side
+    const rim  = new THREE.DirectionalLight(0xbfe0ff, 1.8); rim.position.set(-6, 2, -5);  scene.add(rim);
+    const top  = new THREE.DirectionalLight(0xffffff, 1.5); top.position.set(-1, 8, 1);   scene.add(top);
     const engineLight = new THREE.PointLight(0xffd28a, 0, 16, 2); scene.add(engineLight);
 
     // ===================== SHIP =====================
     const ship = new THREE.Group(); ship.position.set(-2.4, 0, 0); scene.add(ship);
     let shipModel = null, shipReady = false;
     let NOZZLE = -0.5, NOZZLE_Y = 0, NOZZLE_Z = 0;   // computed from model geometry on load
-    new GLTFLoader().load('ship.glb?v=png1', (gltf) => {
+    new GLTFLoader().load('ship.glb?v=png2', (gltf) => {
       const m = gltf.scene;
       const box = new THREE.Box3().setFromObject(m);
       const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
@@ -118,15 +118,19 @@
       m.traverse((o) => { if (o.isMesh) {
         const mats = Array.isArray(o.material) ? o.material : [o.material];
         mats.forEach((mt) => { if (!mt) return;
-          // The base-colour texture is dark (~25% grey); in Safari the silver came from environment
-          // reflections layered on top. With no environment we brighten the paint itself so the direct
-          // lights produce a silver hull identically in every browser. Drop the MR map for a uniform
-          // satin metal; keep colour + normal detail.
+          // Root cause of the "black ship": the base paint is dark (~25% grey in sRGB = only ~5% in
+          // the LINEAR space where lighting is computed). The old x2.3 lift was far too small. In
+          // Safari the silver came from environment reflections; with no environment the dark paint
+          // showed through. Fix = lift the albedo strongly so direct lights alone make it silver,
+          // keep a metallic sheen, and add a self-illumination floor so it can NEVER render black.
           if ('metalnessMap' in mt) mt.metalnessMap = null;
           if ('roughnessMap' in mt) mt.roughnessMap = null;
-          if (mt.metalness !== undefined) mt.metalness = 0.45;
-          if (mt.roughness !== undefined) mt.roughness = 0.48;
-          if (mt.color) mt.color.setRGB(2.3, 2.35, 2.5);   // lift the dark paint to a bright silver
+          if (mt.metalness !== undefined) mt.metalness = 0.35;
+          if (mt.roughness !== undefined) mt.roughness = 0.5;
+          if (mt.color) mt.color.setRGB(4.5, 4.6, 5.0);     // strong albedo lift -> bright silver
+          if (mt.map && mt.emissive) {                      // safety floor: ship is never black
+            mt.emissiveMap = mt.map; mt.emissive.setRGB(1, 1, 1); mt.emissiveIntensity = 1.2;
+          }
           mt.envMapIntensity = 0.0;
           mt.needsUpdate = true;
         });
@@ -319,7 +323,7 @@
         if (ov && ov.style.display !== 'none') ov.style.display = 'none';
       }
     }
-    console.log('THE MITRO hyperspace — build 5 (lights-only, no env)');
+    console.log('THE MITRO hyperspace — build 6 (bright albedo + emissive floor, no env)');
     animate();
   </script>
 </body>
