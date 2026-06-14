@@ -106,6 +106,7 @@
     const ship = new THREE.Group(); ship.position.set(-2.4, 0, 0); scene.add(ship);
     let shipModel = null;
     let NOZZLE = -0.5;                 // computed precisely from model bounds on load
+    let glowBase = 0.4;                // glow radius tied to ship height (set on load)
     new GLTFLoader().load('ship.glb', (gltf) => {
       const m = gltf.scene;
       const box = new THREE.Box3().setFromObject(m);
@@ -122,6 +123,8 @@
       // precise nozzle = rear-most point of the model in ship-local space
       const b = new THREE.Box3().setFromObject(m);
       NOZZLE = (b.min.x - ship.position.x) + 0.06;
+      // glow sized to the engine cross-section (model height), so it never exceeds the ship
+      glowBase = Math.max(0.12, (b.max.y - b.min.y) * 0.5);
       glow.position.x = NOZZLE;
       document.getElementById('loading').style.display = 'none';
     }, undefined, () => { document.getElementById('loading').textContent = 'ship.glb not found'; });
@@ -236,45 +239,17 @@
     composer.addPass(grade);
     composer.addPass(new OutputPass());
 
-    // ===================== AUDIO: music + procedural engine (FMOD-style) =====================
+    // ===================== AUDIO: music only =====================
     const bgm = document.getElementById('bgm'); let bgmStarted = false;
     function startBgm(){ if(bgmStarted||!bgm)return; bgmStarted=true; bgm.volume=0.5; bgm.play().catch(()=>{ bgmStarted=false; }); }
     // try to start music immediately on load; if browser blocks autoplay, the first interaction starts it
     window.addEventListener('load', startBgm);
-
-    let actx=null, engineGain=null, engineFilter=null, subOsc=null, subGain=null, engineOn=false;
-    function startEngineSound(){
-      if(engineOn)return;
-      try{
-        actx = new (window.AudioContext||window.webkitAudioContext)();
-        const buf = actx.createBuffer(1, actx.sampleRate*2, actx.sampleRate);
-        const data = buf.getChannelData(0);
-        for(let i=0;i<data.length;i++) data[i]=Math.random()*2-1;
-        const noise = actx.createBufferSource(); noise.buffer=buf; noise.loop=true;
-        engineFilter = actx.createBiquadFilter(); engineFilter.type='lowpass'; engineFilter.frequency.value=300; engineFilter.Q.value=7;
-        engineGain = actx.createGain(); engineGain.gain.value=0.0;
-        noise.connect(engineFilter); engineFilter.connect(engineGain); engineGain.connect(actx.destination);
-        subOsc = actx.createOscillator(); subOsc.type='sawtooth'; subOsc.frequency.value=50;
-        subGain = actx.createGain(); subGain.gain.value=0.0;
-        subOsc.connect(subGain); subGain.connect(actx.destination);
-        noise.start(); subOsc.start();
-        engineOn=true;
-      }catch(e){}
-    }
-    function updateEngineSound(thr){
-      if(!engineOn||!actx)return;
-      const t=actx.currentTime;
-      engineFilter.frequency.setTargetAtTime(250 + thr*2300, t, 0.08);   // brighter/whoosh as it accelerates
-      engineGain.gain.setTargetAtTime((0.006 + thr*0.05) * (bgm && bgm.muted ? 0 : 1), t, 0.1); // very quiet
-      subOsc.frequency.setTargetAtTime(45 + thr*95, t, 0.1);             // rumble pitch rises
-      subGain.gain.setTargetAtTime((0.004 + thr*0.03) * (bgm && bgm.muted ? 0 : 1), t, 0.1);
-    }
-    window.addEventListener('keydown', ()=>{ startBgm(); startEngineSound(); });
+    window.addEventListener('keydown', startBgm);
 
     const mute = document.getElementById('muteBtn');
     mute.addEventListener('click', (e)=>{ e.stopPropagation(); if(!bgm)return; bgm.muted=!bgm.muted; mute.textContent=bgm.muted?'\u2715':'\u266a'; mute.classList.toggle('off',bgm.muted);
       if(!bgm.muted && !bgmStarted) startBgm(); });
-    document.getElementById('exitBtn').addEventListener('click', (e)=>{ e.stopPropagation(); try{bgm&&bgm.pause();}catch(_){} try{actx&&actx.close();}catch(_){} location.href='index.html?intro=1'; });
+    document.getElementById('exitBtn').addEventListener('click', (e)=>{ e.stopPropagation(); try{bgm&&bgm.pause();}catch(_){} location.href='index.html?intro=1'; });
 
     // ===================== DRAG / THROTTLE =====================
     const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0,0,1),0);
@@ -284,7 +259,7 @@
     updateBounds();
     function toWorld(cx,cy){ ndc.set((cx/window.innerWidth)*2-1, -(cy/window.innerHeight)*2+1); ray.setFromCamera(ndc,camera); ray.ray.intersectPlane(plane,hitv); return hitv; }
     const hint = document.getElementById('hint');
-    canvas.addEventListener('pointerdown', (e)=>{ dragging=true; canvas.classList.add('grabbing'); hint.style.opacity='0'; startBgm(); startEngineSound();
+    canvas.addEventListener('pointerdown', (e)=>{ dragging=true; canvas.classList.add('grabbing'); hint.style.opacity='0'; startBgm();
       const w=toWorld(e.clientX,e.clientY); tx=Math.max(-xmax,Math.min(xmax,w.x)); ty=Math.max(-ymax,Math.min(ymax,w.y)); try{canvas.setPointerCapture(e.pointerId);}catch(_){} });
     canvas.addEventListener('pointermove', (e)=>{ if(!dragging)return; const w=toWorld(e.clientX,e.clientY); tx=Math.max(-xmax,Math.min(xmax,w.x)); ty=Math.max(-ymax,Math.min(ymax,w.y)); });
     function release(){ dragging=false; canvas.classList.remove('grabbing'); }
@@ -318,8 +293,8 @@
       plumeMat.uniforms.uThrottle.value = throttle;
 
       const flick = 0.92 + Math.random()*0.16;
-      glowMat.uniforms.uInt.value = (0.14 + throttle*0.42)*flick;
-      glow.scale.setScalar((0.32 + throttle*0.85)*flick);
+      glowMat.uniforms.uInt.value = (0.10 + throttle*0.30)*flick;
+      glow.scale.setScalar(glowBase * (0.85 + throttle*0.7) * flick);
       engineLight.intensity = throttle*5;
       engineLight.position.set(ship.position.x + NOZZLE - 0.3, ship.position.y, 0);
 
@@ -327,7 +302,6 @@
       camera.position.x = (Math.sin(now/55)+Math.sin(now/97))*throttle*0.04;
       camera.lookAt(0,0,0);
       grade.uniforms.uAmt.value = throttle;
-      updateEngineSound(throttle);
 
       composer.render();
     }
