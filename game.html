@@ -31,7 +31,7 @@
   <div id="hint">DRAG THE SHIP &#160;&#183;&#160; &#8592; SLOWER &#160;&#160;|&#160;&#160; FASTER &#8594;</div>
   <button id="exitBtn" class="game-btn" aria-label="Exit to site">EXIT</button>
   <button id="muteBtn" class="game-btn" aria-label="Toggle music">&#9834;</button>
-  <div class="credit">THE MITRO</div>
+  <div class="credit">THE MITRO &#183; v5</div>
   <audio id="bgm" src="game_track.mp3" loop preload="auto"></audio>
 
   <script type="importmap">
@@ -106,9 +106,9 @@
 
     // ===================== SHIP =====================
     const ship = new THREE.Group(); ship.position.set(-2.4, 0, 0); scene.add(ship);
-    let shipModel = null;
+    let shipModel = null, shipReady = false;
     let NOZZLE = -0.5, NOZZLE_Y = 0, NOZZLE_Z = 0;   // computed from model geometry on load
-    new GLTFLoader().load('ship.glb', (gltf) => {
+    new GLTFLoader().load('ship.glb?v=png1', (gltf) => {
       const m = gltf.scene;
       const box = new THREE.Box3().setFromObject(m);
       const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
@@ -149,7 +149,7 @@
       if (cnt > 0) { NOZZLE = sx/cnt + 0.04; NOZZLE_Y = sy/cnt; NOZZLE_Z = sz/cnt; }
       else { NOZZLE = rearX + 0.06; }
       plume.position.set(NOZZLE - 0.5, NOZZLE_Y, NOZZLE_Z);   // anchored exactly to the nozzle
-      document.getElementById('loading').style.display = 'none';
+      shipReady = true;   // overlay is lifted in the render loop after the ship is actually drawn
     }, undefined, () => { document.getElementById('loading').textContent = 'ship.glb not found'; });
 
     // ===================== STREAKS =====================
@@ -313,7 +313,13 @@
       grade.uniforms.uAmt.value = throttle;
 
       composer.render();
+
+      if (shipReady) {   // ship is now actually on screen — safe to lift the loading overlay
+        const ov = document.getElementById('loading');
+        if (ov && ov.style.display !== 'none') ov.style.display = 'none';
+      }
     }
+    console.log('THE MITRO hyperspace — build 5 (lights-only, no env)');
     animate();
   </script>
 </body>
