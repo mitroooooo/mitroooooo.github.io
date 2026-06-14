@@ -1180,7 +1180,7 @@
     <li><a href="#" onclick="showSection('about')" id="nav-about">About</a></li>
     <li><a href="#" onclick="showSection('work')" id="nav-work" class="active">Work</a></li>
     <li><a href="#" onclick="showSection('listen')" id="nav-listen">Listen</a></li>
-    <li class="nav-tm"><span class="tm-flip" role="button" aria-label="Replay intro" tabindex="0" onclick="replayIntro()"><span class="tm-flip-inner"><span class="tm-face tm-front"><span class="tm-logo"></span></span><span class="tm-face tm-back"><b>CAUTION!</b></span></span></span></li>
+    <li class="nav-tm"><span class="tm-flip" role="button" aria-label="Replay intro" tabindex="0" onclick="replayIntro()"><span class="tm-flip-inner"><span class="tm-face tm-front"><span class="tm-logo"></span></span><span class="tm-face tm-back"><b>ACTION</b></span></span></span></li>
     <li class="nav-dropdown">
       <a href="#" id="nav-solo" onclick="event.preventDefault()">Solo</a>
       <ul class="dropdown-menu">
@@ -1867,6 +1867,16 @@
       intro.classList.remove('gone');
       intro.classList.add('show');
       void intro.offsetWidth;
+
+      // wipe any leftover frame from the previous run, so the start delay shows pure black
+      // (not the last full-screen rings) — that stale frame was the flash on replays
+      const introCv = document.getElementById('intro-canvas');
+      if (introCv) {
+        const icx = introCv.getContext('2d');
+        icx.setTransform(1, 0, 0, 1, 0, 0);
+        icx.clearRect(0, 0, introCv.width, introCv.height);
+        icx.fillStyle = '#000'; icx.fillRect(0, 0, introCv.width, introCv.height);
+      }
 
       const work = document.getElementById('section-work');
       let stop = null, skipped = false;
