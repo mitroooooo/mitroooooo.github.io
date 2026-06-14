@@ -600,6 +600,24 @@
     .contact-form-wrap { max-width: 580px; margin: 0 auto; }
     .contact-form { display: flex; flex-direction: column; gap: 24px; }
 
+    .contact-licensing {
+      text-align: center;
+      margin-top: 46px;
+      font-weight: 300;
+      font-size: 14px;
+      letter-spacing: 0.14em;
+      line-height: 2.05;
+      color: var(--muted);
+    }
+    .contact-licensing a {
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .contact-licensing a:hover { border-color: var(--text); }
+
     /* form validation feedback */
     @keyframes btnShake {
       0%, 100% { transform: translateX(0); }
@@ -1174,18 +1192,9 @@
     #intro.gone { display: none; }
     body.intro-lock { overflow: hidden; }
 
-    @keyframes introZoomIn {                /* scale only (no opacity) so Work never flashes on reveal */
-      from { transform: scale(0.96); }
-      to   { transform: scale(1); }
-    }
-    #section-work.intro-zoom {
-      animation: introZoomIn 1.0s cubic-bezier(0.22, 1, 0.36, 1) both;
-      transform-origin: 50% 40%;
-    }
     @media (prefers-reduced-motion: reduce) {
       #intro-sphere { animation: none; }
       #intro.depart #intro-sphere { animation: none; opacity: 0; transition: opacity 0.4s ease; }
-      #section-work.intro-zoom { animation: none; }
     }
   </style>
 </head><body>
@@ -1301,7 +1310,7 @@
       </div>
 
       <div class="work-item work-stagger" style="--d:900ms" data-video="SuOQbmC9PQk" data-title="Star Wars: Visions">
-        <img class="work-poster" src="VISIONS%201180DEPLOY.jpg" alt="Star Wars: Visions">
+        <img class="work-poster" src="VISIONS%201180DEPLOY.webp" alt="Star Wars: Visions">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           <span class="work-hover-title">Star Wars: Visions — Trailer</span>
@@ -1317,7 +1326,7 @@
       </div>
 
       <div class="work-item work-stagger" style="--d:1500ms" data-video="IYLHdEzsk1s" data-title="M3GAN 2.0">
-        <img class="work-poster" src="MEGAN%201180DEPLOY.jpg" alt="M3GAN 2.0">
+        <img class="work-poster" src="MEGAN%201180DEPLOY.webp" alt="M3GAN 2.0">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           <span class="work-hover-title">M3GAN 2.0 — Trailer</span>
@@ -1325,7 +1334,7 @@
       </div>
 
       <div class="work-item work-stagger" style="--d:1800ms" data-video="GkywNANueew" data-title="Star Wars: Tales of the Underworld">
-        <img class="work-poster" src="TALES%201180DEPLOY.jpg" alt="Star Wars: Tales of the Underworld">
+        <img class="work-poster" src="TALES%201180DEPLOY.webp" alt="Star Wars: Tales of the Underworld">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           <span class="work-hover-title">Star Wars: Tales of the Underworld — Trailer</span>
@@ -1333,7 +1342,7 @@
       </div>
 
       <div class="work-item work-stagger" style="--d:2100ms" data-video="seBixtcx19E" data-title="Missing">
-        <img class="work-poster" src="MISSING%201180DEPLOY.jpeg" alt="Missing">
+        <img class="work-poster" src="MISSING%201180DEPLOY.webp" alt="Missing">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           <span class="work-hover-title">Missing — Trailer</span>
@@ -1342,7 +1351,7 @@
 
       <div class="work-item work-stagger" style="--d:2400ms">
         <a href="https://www.instagram.com/p/CoxdWkxvBh3/" target="_blank">
-          <img class="work-poster" src="MANDOLORIAN%201180DEPLOY.jpg" alt="The Mandalorian">
+          <img class="work-poster" src="MANDOLORIAN%201180DEPLOY.webp" alt="The Mandalorian">
           <div class="work-hover">
             <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
             <span class="work-hover-title">The Mandalorian — Watch</span>
@@ -1351,7 +1360,7 @@
       </div>
 
       <div class="work-item work-stagger" style="--d:2700ms" data-video="32RAq6JzY-w" data-title="Fast X">
-        <img class="work-poster" src="FASTX%201180DEPLOY.jpg" alt="Fast X">
+        <img class="work-poster" src="FASTX%201180DEPLOY.webp" alt="Fast X">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           <span class="work-hover-title">Fast X — Trailer</span>
@@ -1359,7 +1368,7 @@
       </div>
 
       <div class="work-item work-stagger" style="--d:3000ms" data-video="fSqa0a3mGk8" data-title="The Protégé">
-        <img class="work-poster" src="PROTEGE%201180DEPLOY.jpg" alt="The Protégé">
+        <img class="work-poster" src="PROTEGE%201180DEPLOY.webp" alt="The Protégé">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           <span class="work-hover-title">The Protégé — Trailer</span>
@@ -1367,7 +1376,7 @@
       </div>
 
       <div class="work-item work-stagger" style="--d:3300ms" data-video="tPWURGgKJ7o" data-title="Fatale">
-        <img class="work-poster" src="FATALE%201180DEPLOY.jpg" alt="Fatale">
+        <img class="work-poster" src="FATALE%201180DEPLOY.webp" alt="Fatale">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           <span class="work-hover-title">Fatale — Trailer</span>
@@ -1375,7 +1384,7 @@
       </div>
 
       <div class="work-item work-stagger" style="--d:3600ms" data-video="9KVG_X_7Naw" data-title="TRON: ARES">
-        <img class="work-poster" src="IMG_2012.jpeg" alt="TRON: ARES">
+        <img class="work-poster" src="TRON%201180DEPLOY.webp" alt="TRON: ARES">
         <div class="work-hover">
           <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           <span class="work-hover-title">TRON: ARES — Trailer</span>
@@ -1569,6 +1578,12 @@
         <p class="form-success" id="form-success">Message sent — I'll be in touch soon.</p>
 
       </form>
+
+      <div class="contact-licensing">
+        FOR LICENSING AND CUSTOM SOLO MUSIC INQUIRIES<br>
+        CONTACT<br>
+        <a href="mailto:mitro@themitro.com">mitro@themitro.com</a>
+      </div>
     </div>
   </section>
 
@@ -1808,13 +1823,12 @@
         if (done) return; done = true; currentReveal = null;
         if (skipped) stopSound();                       // bailed early -> cut the sound
         intro.classList.add('depart');                  // the "пумс": sphere launches into the distance
-        setTimeout(() => {                              // ~2s mark: Work + posters fly out, sky overlay clears
+        setTimeout(() => {                              // ~2s mark: sky overlay dissolves, posters cascade in
           intro.classList.add('hide');
-          if (work) { work.classList.add('intro-zoom'); replayStagger(work); }
+          if (work) replayStagger(work);
         }, 100);
         setTimeout(() => {
           intro.classList.add('gone');
-          if (work) work.classList.remove('intro-zoom');
           document.body.classList.remove('intro-lock');
           try { sessionStorage.setItem('tm_intro', '1'); } catch (e) {}
         }, 1500);
