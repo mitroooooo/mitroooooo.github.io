@@ -404,48 +404,59 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 18px;
+      gap: 16px;
+      padding: 14px 24px;
+      box-sizing: border-box;
       background: rgba(0,0,0,0);
       opacity: 0;
       transition: opacity 0.35s ease, background 0.35s ease;
       pointer-events: none;
     }
 
-    .work-item:hover .work-hover {
+    .work-item:hover .work-hover,
+    .work-item.revealed .work-hover {
       opacity: 1;
-      background: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0.6);
     }
 
+    .work-info {
+      text-align: center;
+      color: #fff;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.75);
+      transform: translateY(10px);
+      transition: transform 0.4s ease;
+    }
+    .work-item:hover .work-info,
+    .work-item.revealed .work-info { transform: translateY(0); }
+    .work-info p {
+      margin: 2px 0;
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 300;
+      letter-spacing: 0.03em;
+    }
+    .work-info b { font-weight: 600; letter-spacing: 0.04em; }
+
     .work-play {
-      width: 76px;
-      height: 76px;
+      width: 70px;
+      height: 70px;
       border: 2px solid rgba(255,255,255,0.9);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: transform 0.25s ease;
+      flex: none;
     }
 
-    .work-item:hover .work-play { transform: scale(1.08); }
+    .work-item:hover .work-play,
+    .work-item.revealed .work-play { transform: scale(1.08); }
 
     .work-play svg {
       width: 30px;
       height: 30px;
       fill: #fff;
       margin-left: 5px;
-    }
-
-    .work-hover-title {
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #fff;
-      text-shadow: 0 2px 12px rgba(0,0,0,0.6);
-      line-height: 1.4;
-      text-align: center;
-      padding: 0 20px;
     }
 
     /* active video state — video fills the exact poster box */
@@ -489,9 +500,10 @@
     @media (max-width: 700px) {
       #section-work { padding-left: 0; padding-right: 0; padding-bottom: 40px; }
       .work-feed { width: 100%; gap: 0; }
-      .work-play { width: 60px; height: 60px; }
-      .work-play svg { width: 24px; height: 24px; }
-      .work-hover-title { font-size: 11px; }
+      .work-hover { gap: 8px; padding: 8px 14px; }
+      .work-play { width: 40px; height: 40px; }
+      .work-play svg { width: 16px; height: 16px; }
+      .work-info p { font-size: 9px; line-height: 1.35; margin: 1px 0; }
     }
 
     /* ── LISTEN / SOLO ── */
@@ -1261,65 +1273,105 @@
       <div class="work-item work-stagger" style="--d:300ms" data-video="-VIAsu_G7so" data-title="Chief of War">
         <img class="work-poster" src="Chief%20of%20War%20-%20WIDE.jpg" alt="Chief of War">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">Chief of War — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> Apple TV</p>
+              <p><b>Project:</b> Chef of War - Official Teaser</p>
+              <p><b>Music Pub:</b> Phoenician Order</p>
+              <p><b>Track:</b> Original Score - Trailerization</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
       <div class="work-item work-stagger" style="--d:600ms" data-video="Rc0jgWoZo9w" data-title="Sorry, Baby">
         <img class="work-poster" src="Sorry,%20Baby%20-%20WIDE.jpg" alt="Sorry, Baby">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">Sorry, Baby — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> A24</p>
+              <p><b>Project:</b> Sorry, Baby - Trailer</p>
+              <p><b>Music Pub:</b> Phoenician Order</p>
+              <p><b>Track:</b> Original Score - Trailerization</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
       <div class="work-item work-stagger" style="--d:900ms" data-video="SuOQbmC9PQk" data-title="Star Wars: Visions">
         <img class="work-poster" src="VISIONS%201180DEPLOY.webp" alt="Star Wars: Visions">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">Star Wars: Visions — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> Disney</p>
+              <p><b>Project:</b> Star Wars: Visions Volume 3</p>
+              <p><b>Music Pub:</b> Phoenician Order</p>
+              <p><b>Track:</b> Star Wars Themes Remix 0:22-0:29</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
       <div class="work-item work-stagger" style="--d:1200ms" data-video="Pr7R9hQuA2w" data-title="Hijack">
         <img class="work-poster" src="Hijack%20-%20WIDE.jpg" alt="Hijack">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">Hijack — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> Apple TV</p>
+              <p><b>Project:</b> Hijack - Season 2 Date Announcement</p>
+              <p><b>Music Pub:</b> Synchronic Sound</p>
+              <p><b>Track:</b> Undertones - Containment</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
       <div class="work-item work-stagger" style="--d:1500ms" data-video="IYLHdEzsk1s" data-title="M3GAN 2.0">
         <img class="work-poster" src="MEGAN%201180DEPLOY.webp" alt="M3GAN 2.0">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">M3GAN 2.0 — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> Universal</p>
+              <p><b>Project:</b> M3GAN 2.0 - Trailer</p>
+              <p><b>Music Pub:</b> 3db Music</p>
+              <p><b>Track:</b> Britney Spears - Oops!...I Did It Again (Custom - Partly)</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
       <div class="work-item work-stagger" style="--d:1800ms" data-video="GkywNANueew" data-title="Star Wars: Tales of the Underworld">
         <img class="work-poster" src="TALES%201180DEPLOY.webp" alt="Star Wars: Tales of the Underworld">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">Star Wars: Tales of the Underworld — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> Disney</p>
+              <p><b>Project:</b> Tales of the Underworld</p>
+              <p><b>Music Pub:</b> Rareform x BSM</p>
+              <p><b>Track:</b> Going Westward (Original)</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
       <div class="work-item work-stagger" style="--d:2100ms" data-video="seBixtcx19E" data-title="Missing">
         <img class="work-poster" src="MISSING%201180DEPLOY.webp" alt="Missing">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">Missing — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> Sony</p>
+              <p><b>Project:</b> Missing</p>
+              <p><b>Music Pub:</b> AlloyTracks x Synchronic Sound</p>
+              <p><b>Track:</b> Alloy Tracks - Custom (0:45 - 2:00) &amp; Synchronic Sound (2:07 - 2:17)</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
       <div class="work-item work-stagger" style="--d:2400ms">
         <a href="https://www.instagram.com/p/CoxdWkxvBh3/" target="_blank">
           <img class="work-poster" src="MANDOLORIAN%201180DEPLOY.webp" alt="The Mandalorian">
           <div class="work-hover">
+            <div class="work-info">
+              <p><b>Studio:</b> Disney</p>
+              <p><b>Project:</b> The Mandalorian TV Spot</p>
+              <p><b>Music Pub:</b> Divergence Music</p>
+              <p><b>Track:</b> Star Wars Theme Remix</p>
+            </div>
             <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-            <span class="work-hover-title">The Mandalorian — Watch</span>
           </div>
         </a>
       </div>
@@ -1327,33 +1379,53 @@
       <div class="work-item work-stagger" style="--d:2700ms" data-video="32RAq6JzY-w" data-title="Fast X">
         <img class="work-poster" src="FASTX%201180DEPLOY.webp" alt="Fast X">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">Fast X — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> Universal</p>
+              <p><b>Project:</b> Fast X - Official Trailer</p>
+              <p><b>Music Pub:</b> Rareform x BSM</p>
+              <p><b>Track:</b> The Notorious B.I.G. feat. Bone Thugs-n-Harmony - Notorious Thugs (Custom)</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
       <div class="work-item work-stagger" style="--d:3000ms" data-video="fSqa0a3mGk8" data-title="The Protégé">
         <img class="work-poster" src="PROTEGE%201180DEPLOY.webp" alt="The Protégé">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">The Protégé — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> Lionsgate</p>
+              <p><b>Project:</b> The Protege</p>
+              <p><b>Music Pub:</b> SBRMX</p>
+              <p><b>Track:</b> Amy Winehouse - You Know I’m No Good (Custom 0:29 - 0:50)</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
       <div class="work-item work-stagger" style="--d:3300ms" data-video="tPWURGgKJ7o" data-title="Fatale">
         <img class="work-poster" src="FATALE%201180DEPLOY.webp" alt="Fatale">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">Fatale — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> Lionsgate</p>
+              <p><b>Project:</b> Fatale</p>
+              <p><b>Music Pub:</b> SBRMX</p>
+              <p><b>Track:</b> K-Ci &amp; JoJo - All My Life (Custom Partly)</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
       <div class="work-item work-stagger" style="--d:3600ms" data-video="9KVG_X_7Naw" data-title="TRON: ARES">
         <img class="work-poster" src="TRON%201180DEPLOY.webp" alt="TRON: ARES">
         <div class="work-hover">
-          <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          <span class="work-hover-title">TRON: ARES — Trailer</span>
-        </div>
+            <div class="work-info">
+              <p><b>Studio:</b> Disney</p>
+              <p><b>Project:</b> Tron: Ares</p>
+              <p><b>Music Pub:</b> Cavalry</p>
+              <p><b>Track:</b> Small Amount of SFX</p>
+            </div>
+            <div class="work-play"><svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
       </div>
 
     
@@ -1644,6 +1716,7 @@
       }
     });
     sec.querySelectorAll('.work-item.playing').forEach(item => closeWorkItem(item));
+    sec.querySelectorAll('.work-item.revealed').forEach(item => item.classList.remove('revealed'));
   }
 
   function restoreSection(sec) {
@@ -2130,13 +2203,22 @@
     if (c) c.remove();
   }
 
+  // touch devices have no hover: first tap reveals the info panel, second tap plays / follows the link
+  const canHover = window.matchMedia('(hover: hover)').matches;
+  function revealOnly(item) {
+    document.querySelectorAll('.work-item.revealed').forEach(o => { if (o !== item) o.classList.remove('revealed'); });
+    item.classList.add('revealed');
+  }
+
   document.querySelectorAll('.work-item[data-video]').forEach(item => {
     item.addEventListener('click', (e) => {
       if (item.classList.contains('playing')) return;
+      if (!canHover && !item.classList.contains('revealed')) { revealOnly(item); return; }   // first tap: just reveal
       // close any other playing item
       document.querySelectorAll('.work-item.playing').forEach(other => {
         if (other !== item) closeWorkItem(other);
       });
+      item.classList.remove('revealed');
       const vid = item.getAttribute('data-video');
       const title = item.getAttribute('data-title') || '';
       const iframe = document.createElement('iframe');
@@ -2155,6 +2237,14 @@
       item.appendChild(close);
 
       item.classList.add('playing');
+    });
+  });
+
+  // Mandalorian (and any work-item that is an outbound link): first tap reveals, second tap opens the link
+  document.querySelectorAll('.work-item:not([data-video])').forEach(item => {
+    if (!item.querySelector('a[href]')) return;
+    item.addEventListener('click', (e) => {
+      if (!canHover && !item.classList.contains('revealed')) { e.preventDefault(); revealOnly(item); }
     });
   });
 
