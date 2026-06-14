@@ -118,11 +118,13 @@
       mask-size: contain;
       animation: logoShimmer 6s linear infinite;
     }
-    .nav-tm .tm-logo {
-      opacity: 0.85;
-      transition: opacity 0.2s, transform 0.2s;
-    }
-    .nav-tm .tm-logo:hover { opacity: 1; transform: scale(1.08); }
+    .tm-flip { position: relative; display: inline-block; width: 34px; height: 30px; perspective: 600px; cursor: pointer; }
+    .tm-flip-inner { position: absolute; inset: 0; transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1); transform-style: preserve-3d; }
+    .tm-flip:hover .tm-flip-inner, .tm-flip:focus-visible .tm-flip-inner { transform: rotateX(180deg); }
+    .tm-face { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+    .nav-tm .tm-front .tm-logo { opacity: 0.9; }
+    .tm-back { transform: rotateX(180deg); }
+    .tm-back b { font-size: 12px; font-weight: 600; letter-spacing: 0.16em; color: #FFFC52; white-space: nowrap; }
 
     .mobile-tm-logo {
       display: none;
@@ -1178,7 +1180,7 @@
     <li><a href="#" onclick="showSection('about')" id="nav-about">About</a></li>
     <li><a href="#" onclick="showSection('work')" id="nav-work" class="active">Work</a></li>
     <li><a href="#" onclick="showSection('listen')" id="nav-listen">Listen</a></li>
-    <li class="nav-tm"><span class="tm-logo" role="button" aria-label="Work" tabindex="0" onclick="replayIntro()"></span></li>
+    <li class="nav-tm"><span class="tm-flip" role="button" aria-label="Replay intro" tabindex="0" onclick="replayIntro()"><span class="tm-flip-inner"><span class="tm-face tm-front"><span class="tm-logo"></span></span><span class="tm-face tm-back"><b>CAUTION!</b></span></span></span></li>
     <li class="nav-dropdown">
       <a href="#" id="nav-solo" onclick="event.preventDefault()">Solo</a>
       <ul class="dropdown-menu">
@@ -1794,7 +1796,7 @@
       function draw(s, t) {
         ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
-        const cx = W / 2, cy = H / 2; ctx.lineWidth = 1;
+        const cx = W / 2, cy = H / 2; ctx.lineWidth = 1.5;
         for (let i = 1; i <= RINGS; i++) {
           const baseR = i * s, rot = i * 0.16 + t * 0.3, amp = 5 + i * 0.7, alpha = Math.max(0.05, 0.46 - i * 0.013);
           ctx.beginPath();
@@ -1847,6 +1849,9 @@
         const work = document.getElementById('section-work'); if (work) replayStagger(work); return;
       }
 
+      // hold Work's posters hidden behind the overlay so they don't cascade now and then
+      // re-snap when the overlay clears — that double-cascade was the poster flicker
+      document.querySelectorAll('#section-work .work-stagger').forEach(el => { el.style.animation = 'none'; });
       document.body.classList.add('intro-lock');
       intro.style.transition = 'none';
       intro.style.transform = 'none';
