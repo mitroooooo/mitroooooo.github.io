@@ -31,7 +31,7 @@
   <div id="hint">DRAG THE SHIP &#160;&#183;&#160; &#8592; SLOWER &#160;&#160;|&#160;&#160; FASTER &#8594;</div>
   <button id="exitBtn" class="game-btn" aria-label="Exit to site">EXIT</button>
   <button id="muteBtn" class="game-btn" aria-label="Toggle music">&#9834;</button>
-  <div class="credit">THE MITRO &#183; v7</div>
+  <div class="credit">THE MITRO &#183; v8</div>
   <audio id="bgm" src="game_track.mp3" loop preload="auto"></audio>
 
   <script type="importmap">
@@ -127,9 +127,9 @@
           if ('roughnessMap' in mt) mt.roughnessMap = null;
           if (mt.metalness !== undefined) mt.metalness = 0.35;
           if (mt.roughness !== undefined) mt.roughness = 0.5;
-          if (mt.color) mt.color.setRGB(3.0, 3.05, 3.3);    // silver, not blown out
-          if (mt.map && mt.emissive) {                      // gentle safety floor: never black
-            mt.emissiveMap = mt.map; mt.emissive.setRGB(1, 1, 1); mt.emissiveIntensity = 0.5;
+          if (mt.color) mt.color.setRGB(4.0, 4.05, 4.4);    // bright silver (v6 level, slightly tamed)
+          if (mt.map && mt.emissive) {                      // safety floor: never black
+            mt.emissiveMap = mt.map; mt.emissive.setRGB(1, 1, 1); mt.emissiveIntensity = 1.0;
           }
           mt.envMapIntensity = 0.0;
           mt.needsUpdate = true;
@@ -323,7 +323,7 @@
         if (ov && ov.style.display !== 'none') ov.style.display = 'none';
       }
     }
-    console.log('THE MITRO hyperspace — build 7 (tuned brightness, soft bloom, min flame)');
+    console.log('THE MITRO hyperspace — build 8 (brightness restored to v6 level)');
     animate();
   </script>
 </body>
