@@ -1155,9 +1155,11 @@
       opacity: 1;
       transform-origin: 50% 50%;
       will-change: transform, opacity;
+      backface-visibility: hidden;
+      transform: translateZ(0);           /* force a GPU layer so the end-of-anim zoom is composited, not re-rasterised */
     }
     #intro.show { display: block; }
-    #intro canvas { position: absolute; inset: 0; display: block; }
+    #intro canvas { position: absolute; inset: 0; display: block; backface-visibility: hidden; transform: translateZ(0); }
     #intro.gone { display: none; }
     body.intro-lock { overflow: hidden; }
   </style>
@@ -1748,7 +1750,7 @@
   (function () {
     const SPIN_MS = 2000;            // exactly 2s of sphere before the "boom" (synced to the audio hit at 0:02)
     // Add more files here later — they'll just keep cycling in order.
-    const SOUNDS = ['sphere_sound_1.mp3', 'sphere_sound_2.mp3'];
+    const SOUNDS = ['sphere_sound_1.mp3', 'sphere_sound_2.mp3', 'sphere_sound_3.mp3', 'sphere_sound_4.mp3'];
     let currentReveal = null, currentAudio = null, sounds = null, soundIndex = 0;
 
     function ensureSounds() {
@@ -1783,7 +1785,7 @@
       const cv = document.getElementById('intro-canvas');
       if (!cv) { onReveal(); onDone(); return function () {}; }
       const ctx = cv.getContext('2d');
-      const DPR = Math.min(window.devicePixelRatio || 1, 2);
+      const DPR = Math.min(window.devicePixelRatio || 1, 1.25);   // cap density: full-screen fill is the end-of-anim bottleneck
       const RINGS = 24, VERTS = 140, DRAW_END = 950, DUR = 520, STAG = 16, CLUSTER = 2;
       function bounce(t){const n=7.5625,d=2.75;if(t<1/d)return n*t*t;if(t<2/d){t-=1.5/d;return n*t*t+0.75;}if(t<2.5/d){t-=2.25/d;return n*t*t+0.9375;}t-=2.625/d;return n*t*t+0.984375;}
       let W = 0, H = 0, maxS = 0;
