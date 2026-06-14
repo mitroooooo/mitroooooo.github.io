@@ -31,7 +31,7 @@
   <div id="hint">DRAG THE SHIP &#160;&#183;&#160; &#8592; SLOWER &#160;&#160;|&#160;&#160; FASTER &#8594;</div>
   <button id="exitBtn" class="game-btn" aria-label="Exit to site">EXIT</button>
   <button id="muteBtn" class="game-btn" aria-label="Toggle music">&#9834;</button>
-  <div class="credit">THE MITRO &#183; v8</div>
+  <div class="credit">THE MITRO</div>
   <audio id="bgm" src="game_track.mp3" loop preload="auto"></audio>
 
   <script type="importmap">
@@ -255,12 +255,22 @@
     composer.addPass(grade);
     composer.addPass(new OutputPass());
 
-    // ===================== AUDIO: music only =====================
+    // ===================== AUDIO: music =====================
+    // Browsers block gesture-free autoplay with sound (and differ on when they allow it). We attempt
+    // to start as soon as the game is open, and otherwise the first interaction starts it — identical
+    // behaviour in Safari and Chrome.
     const bgm = document.getElementById('bgm'); let bgmStarted = false;
-    function startBgm(){ if(bgmStarted||!bgm)return; bgmStarted=true; bgm.volume=0.5; bgm.play().catch(()=>{ bgmStarted=false; }); }
-    // try to start music immediately on load; if browser blocks autoplay, the first interaction starts it
+    function startBgm(){
+      if(bgmStarted || !bgm) return;
+      bgm.volume = 0.5;
+      const p = bgm.play();
+      if(p !== undefined){ p.then(()=>{ bgmStarted = true; }).catch(()=>{}); }  // retry on next trigger if blocked
+      else { bgmStarted = true; }
+    }
     window.addEventListener('load', startBgm);
-    window.addEventListener('keydown', startBgm);
+    document.addEventListener('DOMContentLoaded', startBgm);
+    // any first interaction guarantees playback if the browser blocked the auto attempt
+    ['pointerdown','touchstart','click','keydown'].forEach(ev => window.addEventListener(ev, startBgm, { passive: true }));
 
     const mute = document.getElementById('muteBtn');
     mute.addEventListener('click', (e)=>{ e.stopPropagation(); if(!bgm)return; bgm.muted=!bgm.muted; mute.textContent=bgm.muted?'\u2715':'\u266a'; mute.classList.toggle('off',bgm.muted);
@@ -318,9 +328,9 @@
 
       composer.render();
 
-      if (shipReady) {   // ship is now actually on screen — safe to lift the loading overlay
+      if (shipReady) {   // ship is now actually on screen — lift overlay and try to start the music
         const ov = document.getElementById('loading');
-        if (ov && ov.style.display !== 'none') ov.style.display = 'none';
+        if (ov && ov.style.display !== 'none') { ov.style.display = 'none'; startBgm(); }
       }
     }
     console.log('THE MITRO hyperspace — build 8 (brightness restored to v6 level)');
