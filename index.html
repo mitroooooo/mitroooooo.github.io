@@ -839,11 +839,11 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      transform: translate3d(0,0,0) scale(1.06);   /* slight zoom hides edges; translate drives the bg carousel */
+      transform: translate3d(0,0,0);   /* no scale: layer is exactly viewport-sized, so the carousel slides fully off (no leftover edge) */
       filter: blur(var(--bg-blur, 0px));
       will-change: transform;
     }
-    #bg-layer-b { transform: translate3d(110%,0,0) scale(1.06); }  /* parked off-screen until a slide */
+    #bg-layer-b { transform: translate3d(100%,0,0); }  /* parked off-screen until a slide */
     #bg-layer::after, #bg-layer-b::after { /* darkening veil over the image; strength per section via --bg-dim */
       content: '';
       position: absolute;
@@ -2237,7 +2237,7 @@
       const nxt = (bgActive === 'a') ? b : a;
       const img = "url('" + cfg.img + "')";
       const flt = cfg.blur ? 'blur(' + cfg.blur + 'px)' : 'none';
-      const SCALE = ' scale(1.06)';
+      const SCALE = '';   // no scale — layer matches the viewport so it slides fully off-screen
       const sameImg = (cfg.img === bgCurrentImg);
 
       if (!dir || sameImg) {
