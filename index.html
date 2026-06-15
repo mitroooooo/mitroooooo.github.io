@@ -426,20 +426,17 @@
       gap: 16px;
       padding: 14px 24px;
       box-sizing: border-box;
-      background: rgba(0,0,0,0.6);   /* always set; the reveal is driven by opacity only (cheap) */
+      background: rgba(0,0,0,0);
       opacity: 0;
-      transition: opacity 0.35s ease;
+      transition: opacity 0.35s ease, background 0.35s ease;
       pointer-events: none;
     }
 
     .work-item:hover .work-hover,
     .work-item.revealed .work-hover {
       opacity: 1;
+      background: rgba(0,0,0,0.6);
     }
-
-    /* While the page is scrolling, don't let the cursor passing over posters trigger the hover
-       overlay on every poster (desktop scroll jank). Hover resumes the instant scrolling stops. */
-    body.is-scrolling .work-item { pointer-events: none; }
 
     .work-info {
       text-align: center;
@@ -1767,20 +1764,6 @@
   });
   window.addEventListener('pagehide', silenceEmbeds);
   window.addEventListener('pageshow', (e) => { if (e.persisted) restoreEmbeds(); });
-
-  // ── Buttery poster scrolling: tag <body> while scrolling so the cursor passing over posters
-  // mid-scroll doesn't fire the hover overlay on every one. Hover resumes 140ms after scroll stops.
-  (function () {
-    let scrollTimer = null;
-    function onScroll() {
-      const b = document.body;
-      if (!b.classList.contains('is-scrolling')) b.classList.add('is-scrolling');
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(() => b.classList.remove('is-scrolling'), 140);
-    }
-    // capture:true so it also catches scrolling inside inner containers; passive for smoothness
-    window.addEventListener('scroll', onScroll, { capture: true, passive: true });
-  })();
 
   function showSection(name, dir) {
     if (typeof event !== 'undefined' && event) event.preventDefault();
