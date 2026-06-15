@@ -1229,6 +1229,7 @@
 
   <div class="nav-socials">
     <a href="game.html" class="nav-play" aria-label="Open the game">GAME</a>
+    <a href="forest.html" class="nav-play" aria-label="Open the forest game">WALK</a>
     <!-- Instagram -->
     <a href="https://instagram.com/dzmitrymus/" target="_blank" aria-label="Instagram">
       <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
@@ -1264,6 +1265,7 @@
   <a href="#" onclick="showSection('contact');closeMobile()">Contact</a>
   <div class="mobile-socials">
     <a href="game.html" class="mobile-play" aria-label="Open the game">GAME</a>
+    <a href="forest.html" class="mobile-play" aria-label="Open the forest game">WALK</a>
     <a href="https://instagram.com/dzmitrymus/" target="_blank" aria-label="Instagram">
       <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
     </a>
@@ -1759,7 +1761,7 @@
     }
 
     if (current) muteSection(current);
-    history.replaceState(null, '', '#' + name);
+    history.replaceState(null, '', '/' + name);   // clean path URL, e.g. /work (no '#')
     activateSection(name);
     restoreSection(target);
 
@@ -1826,11 +1828,23 @@
     document.querySelectorAll('iframe').forEach(f => {
       if (f.src && f.src !== 'about:blank') f.dataset.liveSrc = f.src;
     });
-    const hash = window.location.hash.replace('#', '');
-    if (hash && document.getElementById('section-' + hash)) {
-      activateSection(hash);
+    // Resolve the initial section from (in order): the ?route= param left by 404.html on a direct
+    // visit to /work, the clean path /work, or a legacy #work link. Then normalise the address bar
+    // to the clean "/section" form. The ?intro=1 flag (game EXIT) is preserved for the intro handler.
+    const _p = new URLSearchParams(location.search);
+    const _keepIntro = _p.get('intro') === '1' ? '?intro=1' : '';
+    let seg = _p.get('route');
+    if (seg == null) {
+      seg = location.pathname.replace(/^\/+/, '').replace(/\.html$/, '').replace(/\/+$/, '');
+      if (seg === 'index') seg = '';
+    }
+    if (!seg) seg = (location.hash || '').replace(/^#/, '');   // legacy /#work links still work
+    if (seg && document.getElementById('section-' + seg)) {
+      activateSection(seg);
+      history.replaceState(null, '', '/' + seg + _keepIntro);
     } else {
-      // no hash: apply background for whichever section is active by default
+      history.replaceState(null, '', '/' + _keepIntro);
+      // no section: apply background for whichever section is active by default
       const active = document.querySelector('section.active');
       if (active && typeof applySectionBackground === 'function') {
         applySectionBackground(active.id.replace('section-', ''));
@@ -2008,7 +2022,7 @@
       try {
         const params = new URLSearchParams(location.search);
         if (params.get('intro') === '1') {
-          history.replaceState(null, '', location.pathname);     // clean the URL
+          history.replaceState(null, '', '/');     // clean the URL (root = Work)
           if (typeof window.replayIntro === 'function') setTimeout(window.replayIntro, 80);
         }
       } catch (e) {}
