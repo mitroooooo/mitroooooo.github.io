@@ -831,7 +831,7 @@
     }
 
     /* ── GLOBAL BACKGROUND SYSTEM (fixed image layer + fog layer, behind all content) ── */
-    #bg-layer {
+    #bg-layer, #bg-layer-b {
       position: fixed;
       inset: 0;
       z-index: -2;
@@ -839,11 +839,12 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      transform: scale(1.06);          /* hides blur edges + slight zoom */
+      transform: translate3d(0,0,0) scale(1.06);   /* slight zoom hides edges; translate drives the bg carousel */
       filter: blur(var(--bg-blur, 0px));
-      /* blur applied instantly — animating filter:blur on the full-screen bg stutters in Chrome */
+      will-change: transform;
     }
-    #bg-layer::after { /* darkening veil over the image; strength set per section via --bg-dim */
+    #bg-layer-b { transform: translate3d(110%,0,0) scale(1.06); }  /* parked off-screen until a slide */
+    #bg-layer::after, #bg-layer-b::after { /* darkening veil over the image; strength per section via --bg-dim */
       content: '';
       position: absolute;
       inset: 0;
@@ -1202,6 +1203,7 @@
 
 <!-- global background system: image layer + animated fog layer, both behind all content -->
 <div id="bg-layer"></div>
+<div id="bg-layer-b"></div>
 <div id="vanta-fog"></div>
 
 
@@ -1782,7 +1784,7 @@
 
     if (current) muteSection(current);
     history.replaceState(null, '', '/' + name);   // clean path URL, e.g. /work (no '#')
-    activateSection(name);
+    activateSection(name, dir);
     restoreSection(target);
 
     // slide-in animation
@@ -1815,7 +1817,7 @@
     if (right) right.style.display = idx >= pageOrder.length - 1 ? 'none' : 'flex';
   }
 
-  function activateSection(name) {
+  function activateSection(name, dir) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
     const target = document.getElementById('section-' + name);
@@ -1840,7 +1842,7 @@
     if (typeof rearmPlayers === 'function') rearmPlayers(name);
 
     // set the section's background image + fog
-    if (typeof applySectionBackground === 'function') applySectionBackground(name);
+    if (typeof applySectionBackground === 'function') applySectionBackground(name, dir);
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -2170,6 +2172,7 @@
 
   let vantaEffect = null, vantaScriptsPromise = null, currentFog = null, pendingFog = null;
   let currentSectionName = null, listenPlayersRevealed = false;
+  let bgActive = 'a', bgCurrentImg = null;   // bg carousel: which layer shows the bg, and its image
 
   function loadVantaScripts() {
     if (window.VANTA && window.VANTA.FOG) return Promise.resolve(true);
@@ -2224,15 +2227,45 @@
     });
   }
 
-  function applySectionBackground(name) {
+  function applySectionBackground(name, dir) {
     currentSectionName = name;
-    const bgEl = document.getElementById('bg-layer');
     const cfg = SECTION_BG[name];
-    if (bgEl && cfg) {
-      bgEl.style.backgroundImage = "url('" + cfg.img + "')";
-      bgEl.style.setProperty('--bg-dim', cfg.dim);
-      let blur = cfg.blur;
-      bgEl.style.filter = blur ? 'blur(' + blur + 'px)' : 'none';
+    const a = document.getElementById('bg-layer');
+    const b = document.getElementById('bg-layer-b');
+    if (cfg && a && b) {
+      const cur = (bgActive === 'a') ? a : b;
+      const nxt = (bgActive === 'a') ? b : a;
+      const img = "url('" + cfg.img + "')";
+      const flt = cfg.blur ? 'blur(' + cfg.blur + 'px)' : 'none';
+      const SCALE = ' scale(1.06)';
+      const sameImg = (cfg.img === bgCurrentImg);
+
+      if (!dir || sameImg) {
+        // instant: initial load, OR the background image isn't changing (nothing to slide)
+        cur.style.transition = 'none';
+        cur.style.transform = 'translate3d(0,0,0)' + SCALE;
+        cur.style.backgroundImage = img;
+        cur.style.setProperty('--bg-dim', cfg.dim);
+        cur.style.filter = flt;
+        nxt.style.transition = 'none';                       // keep the other layer parked off-screen
+        nxt.style.transform = 'translate3d(110%,0,0)' + SCALE;
+      } else {
+        // directional carousel: slide the new background in from the same side the page slides from
+        const inFrom = (dir === 'left') ? '-100%' : '100%';
+        const outTo  = (dir === 'left') ? '100%'  : '-100%';
+        nxt.style.backgroundImage = img;
+        nxt.style.setProperty('--bg-dim', cfg.dim);
+        nxt.style.filter = flt;
+        nxt.style.transition = 'none';
+        nxt.style.transform = 'translate3d(' + inFrom + ',0,0)' + SCALE;
+        void nxt.offsetWidth;                                // reflow so the start position registers
+        nxt.style.transition = 'transform 0.55s cubic-bezier(0.22,1,0.36,1)';
+        cur.style.transition = 'transform 0.55s cubic-bezier(0.22,1,0.36,1)';
+        nxt.style.transform = 'translate3d(0,0,0)' + SCALE;  // new bg slides to centre
+        cur.style.transform = 'translate3d(' + outTo + ',0,0)' + SCALE;  // old bg slides out
+        bgActive = (bgActive === 'a') ? 'b' : 'a';
+      }
+      bgCurrentImg = cfg.img;
     }
     applyFog(null);   // fog disabled everywhere (code kept for easy re-enable)
     updateProgress(name);
