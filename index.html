@@ -2112,16 +2112,8 @@
       const reveal = () => {
         if (done) return; done = true;
         el.classList.add('revealed');
-        // Listen: blur the night sky once its Disco players have dropped in
-        const sec = el.closest('section');
-        if (sec && sec.id === 'section-listen') {
-          listenPlayersRevealed = true;
-          if (currentSectionName === 'listen') {
-            const bg = document.getElementById('bg-layer');
-            if (bg) bg.style.filter = 'blur(1.5px)';
-          }
-        }
-        // strip transform after the zoom so the iframe rests on the native pixel grid (no jitter)
+        // (Listen background blur removed — the night sky now stays sharp, which is lighter for Chrome.)
+        // strip transform after the reveal so the iframe rests on the native pixel grid (no jitter)
         el.addEventListener('animationend', function handler(e) {
           if (e.animationName === 'playerRise') {
             // settle on a no-op GPU layer (NOT 'none') so the iframe doesn't get demoted off its
@@ -2240,7 +2232,6 @@
       bgEl.style.backgroundImage = "url('" + cfg.img + "')";
       bgEl.style.setProperty('--bg-dim', cfg.dim);
       let blur = cfg.blur;
-      if (name === 'listen' && listenPlayersRevealed) blur = 1.5;  // sky blurs once the Disco players are in
       bgEl.style.filter = blur ? 'blur(' + blur + 'px)' : 'none';
     }
     applyFog(null);   // fog disabled everywhere (code kept for easy re-enable)
