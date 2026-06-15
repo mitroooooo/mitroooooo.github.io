@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>THE MITRO</title>
+  <script>
+    // GitHub Pages serves this file for any path that is NOT a real file (e.g. /work, /about).
+    // The site is a single page, so we bounce back to the root with the requested section kept in
+    // ?route=, and index.html restores the clean "/section" address. Direct links & refresh now work.
+    (function () {
+      var seg = location.pathname.replace(/^\/+/, '').replace(/\.html$/, '').replace(/\/+$/, '');
+      var extra = location.search ? '&' + location.search.replace(/^\?/, '') : '';
+      location.replace('/?route=' + encodeURIComponent(seg) + extra + location.hash);
+    })();
+  </script>
+</head>
+<body style="margin:0;background:#000;"></body>
+</html>
