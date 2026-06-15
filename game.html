@@ -85,6 +85,32 @@
     renderer.toneMappingExposure = 1.0;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
+    // -------- diagnostics: open  game.html?debug=1  to see the readout --------
+    const DEBUG = new URLSearchParams(location.search).has('debug');
+    const DBG = { renderer: '?', model: 'loading\u2026', tex: '?', err: '' };
+    (function(){
+      try {
+        const gl = renderer.getContext();
+        const ext = gl.getExtension('WEBGL_debug_renderer_info');
+        DBG.renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)
+                           : (gl.getParameter(gl.RENDERER) || 'unknown');
+      } catch (e) { DBG.renderer = 'n/a'; }
+    })();
+    let dbgEl = null;
+    function showDebug(){
+      if (!DEBUG) return;
+      if (!dbgEl){
+        dbgEl = document.createElement('div');
+        dbgEl.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:50;max-width:92vw;'
+          + 'font:12px/1.5 monospace;color:#FFFC52;background:rgba(0,0,0,.72);padding:8px 10px;'
+          + 'border:1px solid rgba(255,252,82,.4);border-radius:4px;white-space:pre-wrap;pointer-events:none;';
+        document.body.appendChild(dbgEl);
+      }
+      dbgEl.textContent = 'DEBUG\nrenderer: ' + DBG.renderer + '\nmobile: ' + isMobile
+        + '\nmodel: ' + DBG.model + '\ntexture: ' + DBG.tex + (DBG.err ? '\nerror: ' + DBG.err : '');
+    }
+    showDebug();
+
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000005);
     scene.fog = new THREE.FogExp2(0x000008, 0.012);
@@ -115,26 +141,41 @@
       m.position.sub(center);
       m.scale.setScalar(1.3 / (Math.max(size.x, size.y, size.z) || 1));
       m.rotation.y = Math.PI / 2;                 // nose -> +X (right)
+      let texOK = false, texInfo = 'none';
       m.traverse((o) => { if (o.isMesh) {
         const mats = Array.isArray(o.material) ? o.material : [o.material];
         mats.forEach((mt) => { if (!mt) return;
-          // Root cause of the "black ship": the base paint is dark (~25% grey in sRGB = only ~5% in
-          // the LINEAR space where lighting is computed). The old x2.3 lift was far too small. In
-          // Safari the silver came from environment reflections; with no environment the dark paint
-          // showed through. Fix = lift the albedo strongly so direct lights alone make it silver,
-          // keep a metallic sheen, and add a self-illumination floor so it can NEVER render black.
+          // Root cause of the "black ship": the base paint is dark, and a present-but-UNDECODED
+          // texture samples as black (multiplied into both colour and emissive). So we now check the
+          // texture actually decoded; if not, we drop the maps and use a flat bright self-lit silver.
           if ('metalnessMap' in mt) mt.metalnessMap = null;
           if ('roughnessMap' in mt) mt.roughnessMap = null;
           if (mt.metalness !== undefined) mt.metalness = 0.35;
           if (mt.roughness !== undefined) mt.roughness = 0.5;
-          if (mt.color) mt.color.setRGB(4.0, 4.05, 4.4);    // bright silver (v6 level, slightly tamed)
-          if (mt.map && mt.emissive) {                      // safety floor: never black
-            mt.emissiveMap = mt.map; mt.emissive.setRGB(1, 1, 1); mt.emissiveIntensity = 1.0;
+
+          const img = mt.map && mt.map.image;
+          const decoded = !!(img && (img.width || img.naturalWidth || img.videoWidth));
+          if (mt.map && decoded) {
+            // textures present and usable -> the established, good-looking textured path
+            texOK = true;
+            texInfo = (img.width || img.naturalWidth) + 'x' + (img.height || img.naturalHeight);
+            if (mt.color) mt.color.setRGB(4.0, 4.05, 4.4);   // bright silver lift
+            if (mt.emissive) { mt.emissiveMap = mt.map; mt.emissive.setRGB(1, 1, 1); mt.emissiveIntensity = 1.0; }
+          } else {
+            // BULLETPROOF FLOOR: no usable texture -> flat bright silver, self-lit. Cannot be black,
+            // in ANY browser, with or without a GPU.
+            mt.map = null; mt.emissiveMap = null;
+            if (mt.color) mt.color.setRGB(0.72, 0.74, 0.82);
+            if (mt.emissive) mt.emissive.setRGB(0.22, 0.23, 0.30);
+            mt.emissiveIntensity = 1.0;
+            if (mt.metalness !== undefined) mt.metalness = 0.40;
+            if (mt.roughness !== undefined) mt.roughness = 0.45;
           }
           mt.envMapIntensity = 0.0;
           mt.needsUpdate = true;
         });
       }});
+      DBG.model = 'loaded'; DBG.tex = texOK ? ('OK ' + texInfo) : 'FAILED \u2192 flat-silver fallback'; showDebug();
       ship.add(m); shipModel = m;
       // find the real nozzle: average the rear-most slice of vertices (the exhaust opening)
       m.updateWorldMatrix(true, true);
@@ -154,7 +195,10 @@
       else { NOZZLE = rearX + 0.06; }
       plume.position.set(NOZZLE - 0.5, NOZZLE_Y, NOZZLE_Z);   // anchored exactly to the nozzle
       shipReady = true;   // overlay is lifted in the render loop after the ship is actually drawn
-    }, undefined, () => { document.getElementById('loading').textContent = 'ship.glb not found'; });
+    }, undefined, (e) => {
+      DBG.model = 'FAILED to load'; DBG.err = (e && e.message) ? e.message : 'network / not found'; showDebug();
+      document.getElementById('loading').textContent = 'ship.glb not found';
+    });
 
     // ===================== STREAKS =====================
     const COUNT = isMobile ? 460 : 1200, RANGE = 150;
