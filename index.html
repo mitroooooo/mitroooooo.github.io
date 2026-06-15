@@ -1215,7 +1215,7 @@
 
 <!-- NAV -->
 <nav>
-  <span class="tm-logo nav-center-tm" role="button" aria-label="Work" tabindex="0" onclick="showSection('work')"></span>
+  <span class="tm-logo nav-center-tm" role="button" aria-label="Replay intro" tabindex="0" data-umami-event="logo:click" onclick="replayIntro()"></span>
   <a href="#" class="nav-logo" onclick="showSection('about')"><span id="logo-text">THE MITRO</span></a>
 
   <ul class="nav-links">
@@ -1902,7 +1902,7 @@
     const SPIN_MS = 2000;            // exactly 2s of sphere before the "boom" (synced to the audio hit at 0:02)
     // Add more files here later — they'll just keep cycling in order.
     const SOUNDS = ['sphere_sound_1.mp3', 'sphere_sound_2.mp3', 'sphere_sound_3.mp3', 'sphere_sound_4.mp3'];
-    let currentReveal = null, currentAudio = null, sounds = null, soundIndex = 0;
+    let currentReveal = null, currentAudio = null, sounds = null, soundIndex = 0, audioUnlocked = false;
 
     function ensureSounds() {
       if (sounds) return;
@@ -2060,6 +2060,25 @@
     window.addEventListener('DOMContentLoaded', () => {
       const intro = document.getElementById('intro');
       if (intro) intro.addEventListener('click', () => { if (currentReveal) currentReveal(); });   // tap to skip
+
+      // Mobile: audio can't autoplay. Unlock the intro sounds on the first user touch (a real gesture),
+      // so the TM-logo replay — which starts the sound a beat after the tap — is allowed to play on phones.
+      const unlockAudio = () => {
+        if (audioUnlocked) return; audioUnlocked = true;
+        try {
+          ensureSounds();
+          sounds.forEach(a => {
+            try {
+              a.muted = true;
+              const p = a.play();
+              if (p && p.then) p.then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(() => { a.muted = false; });
+              else { a.pause(); a.muted = false; }
+            } catch (e) {}
+          });
+        } catch (e) {}
+      };
+      document.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
+      document.addEventListener('pointerdown', unlockAudio, { once: true });
       // No intro on entry: the page opens straight on Work and the posters cascade in.
       // Exception: returning from the game (EXIT) replays the TM intro and lands on Work.
       try {
