@@ -841,7 +841,7 @@
       background-repeat: no-repeat;
       transform: scale(1.06);          /* hides blur edges + slight zoom */
       filter: blur(var(--bg-blur, 0px));
-      transition: filter 0.5s ease;
+      /* blur applied instantly — animating filter:blur on the full-screen bg stutters in Chrome */
     }
     #bg-layer::after { /* darkening veil over the image; strength set per section via --bg-dim */
       content: '';
@@ -1030,23 +1030,23 @@
 
     .disco-embed { display: block; border: 0; }
 
-    /* player zoom-blur reveal (overlay mask, iframe-safe) */
+    /* player reveal — uses TRANSLATE (not scale): a translated layer is composited as-is, while
+       scaling forces Chrome to re-rasterize the player iframe every frame (Safari did it cheaply). */
     .player-reveal {
       position: relative;
       opacity: 0;
-      transform: translateZ(0) scale(1.08);
+      transform: translate3d(0, 16px, 0);
       will-change: opacity, transform;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
     }
     .player-reveal.revealed {
-      animation: playerZoomBlur 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: playerRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       animation-delay: var(--pd, 0ms);
     }
-    @keyframes playerZoomBlur {
-      0%   { opacity: 0; transform: translateZ(0) scale(1.08); }
-      99%  { transform: translateZ(0) scale(1.0008); }
-      100% { opacity: 1; transform: translateZ(0) scale(1); }
+    @keyframes playerRise {
+      0%   { opacity: 0; transform: translate3d(0, 16px, 0); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
     /* players stay hidden until their iframe has loaded, then zoom-fade in (see revealPlayersIn) */
     .player-frame { position: relative; border-radius: 10px; overflow: hidden; }
@@ -2123,10 +2123,10 @@
         }
         // strip transform after the zoom so the iframe rests on the native pixel grid (no jitter)
         el.addEventListener('animationend', function handler(e) {
-          if (e.animationName === 'playerZoomBlur') {
+          if (e.animationName === 'playerRise') {
             // settle on a no-op GPU layer (NOT 'none') so the iframe doesn't get demoted off its
             // composite layer and repaint-snap on the last frame — that snap was the residual jitter
-            el.style.transform = 'translateZ(0)';
+            el.style.transform = 'translate3d(0,0,0)';
             el.style.opacity = '1';
             el.style.willChange = 'auto';
             el.removeEventListener('animationend', handler);
