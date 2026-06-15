@@ -2311,6 +2311,9 @@
   });
 
   (function () {
+    // Smooth (inertial) wheel-scroll is DISABLED — the page uses the browser's native scroll.
+    // To bring the smooth scroll back, just delete the `return;` line below.
+    return;
     const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
     const fine = window.matchMedia('(pointer: fine)').matches;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
