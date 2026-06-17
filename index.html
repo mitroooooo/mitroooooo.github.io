@@ -1514,10 +1514,10 @@
     <div class="album-page-inner">
       <h1 class="section-title">Selfaware Vol.1</h1>
       <div class="album-widget player-reveal">
-        <iframe class="widget-embed"
-          src="https://open.spotify.com/embed/album/37Z7uurE3tatN1uN7FCCLn?utm_source=generator"
-          height="450"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        <iframe class="widget-embed mitro-player"
+          src="/player.html?rel=selfaware1"
+          height="560"
+          allow="autoplay; encrypted-media"
           loading="lazy"></iframe><div class="player-mask"></div>
       </div>
       <div class="client-access-row">
@@ -1530,10 +1530,10 @@
     <div class="album-page-inner">
       <h1 class="section-title">Selfaware Vol.2</h1>
       <div class="album-widget player-reveal">
-        <iframe class="widget-embed"
-          src="https://open.spotify.com/embed/album/5uFplXwzROvW8RI34xOVTb?utm_source=generator"
-          height="450"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        <iframe class="widget-embed mitro-player"
+          src="/player.html?rel=selfaware2"
+          height="560"
+          allow="autoplay; encrypted-media"
           loading="lazy"></iframe><div class="player-mask"></div>
       </div>
       <div class="client-access-row">
@@ -1546,10 +1546,10 @@
     <div class="album-page-inner">
       <h1 class="section-title">Golden Ghost</h1>
       <div class="album-widget player-reveal">
-        <iframe class="widget-embed"
-          src="https://open.spotify.com/embed/track/30hMjQO2UAvaSaBHLT5Wjc?utm_source=generator"
-          height="352"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        <iframe class="widget-embed mitro-player"
+          src="/player.html?rel=goldenghost"
+          height="540"
+          allow="autoplay; encrypted-media"
           loading="lazy"></iframe><div class="player-mask"></div>
       </div>
       <div class="client-access-row">
@@ -1562,10 +1562,10 @@
     <div class="album-page-inner">
       <h1 class="section-title">Galapogos</h1>
       <div class="album-widget player-reveal">
-        <iframe class="widget-embed"
-          src="https://open.spotify.com/embed/track/2mZ38p3aG35hcMChNjjx2e?utm_source=generator"
-          height="352"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        <iframe class="widget-embed mitro-player"
+          src="/player.html?rel=galapogos"
+          height="540"
+          allow="autoplay; encrypted-media"
           loading="lazy"></iframe><div class="player-mask"></div>
       </div>
       <div class="client-access-row">
@@ -2417,6 +2417,16 @@
   <div class="page-arrow right" onclick="navigatePage(1)" aria-label="Next page">
     <svg viewBox="0 0 24 24" fill="none"><polyline points="10,5 17,12 10,19"/></svg>
   </div>
+  <script>
+  /* size each embedded THE MITRO player iframe to its content (sent via postMessage) */
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || typeof d.mitroHeight !== 'number') return;
+    document.querySelectorAll('iframe.mitro-player').forEach(function (f) {
+      if (f.contentWindow === e.source) f.style.height = d.mitroHeight + 'px';
+    });
+  });
+  </script>
 
 </body>
 </html>
