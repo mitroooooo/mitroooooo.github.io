@@ -1493,7 +1493,7 @@
       </div>
 
       <div class="listen-col player-reveal">
-        <p class="listen-label">SOUNDTRACK</p>
+        <p class="listen-label">SOUNDTRACK/LIBRARY</p>
         <div class="player-frame"><iframe id="disco-playlist-29706794" name="disco-playlist-29706794" allowfullscreen frameborder="0" class="disco-embed"
           src="https://themitro.disco.ac/e/p/29706794?download=false&s=ht-YpOq8nXiYIABajT9eQUrjHdg%3A4WqeLh8M&artwork=true&color=%23FFFC52&theme=dark"
           width="100%" height="820"></iframe><div class="player-mask"></div></div>
@@ -1768,11 +1768,11 @@
     const active = document.querySelector('section.active');
     if (active) restoreSection(active);
   }
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) silenceEmbeds(); else restoreEmbeds();
-  });
-  window.addEventListener('pagehide', silenceEmbeds);
-  window.addEventListener('pageshow', (e) => { if (e.persisted) restoreEmbeds(); });
+  // Background playback: we intentionally DO NOT silence on tab hide / minimize, so music keeps
+  // playing in the background (tab switch, phone lock, app backgrounded).
+  // Players still never overlap on the site: muteSection() stops the previous section's audio
+  // whenever you navigate (see showSection), so switching releases/sections swaps cleanly.
+  // (silenceEmbeds/restoreEmbeds remain defined above but are no longer bound to visibility events.)
 
   // Approximate "player engagement": we can't read inside a cross-origin player iframe, but when a
   // user clicks INTO one the page loses focus and document.activeElement becomes that iframe. That
