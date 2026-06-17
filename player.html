@@ -242,6 +242,23 @@ function postHeight(){if(window.parent===window)return;const el=document.querySe
 if(EMBED){window.addEventListener('load',postHeight);window.addEventListener('resize',postHeight);
   if(window.ResizeObserver){try{new ResizeObserver(postHeight).observe(document.querySelector('.wrap'));}catch(e){}}
   setTimeout(postHeight,200);setTimeout(postHeight,800);setTimeout(postHeight,1600);}
+
+function postMitro(o){if(window.parent!==window){o.rel=_relParam||'';try{parent.postMessage(o,'*');}catch(e){}}}
+function postPlay(){if(typeof curTrack!=='function')return;var t=curTrack();postMitro({mitro:'play',title:t.nm,cat:RELEASES[rel].title,dur:t.dur,wave:t.wave,cover:RELEASES[rel].cover,time:audio.currentTime});}
+if(EMBED){
+  var _play=play,_pause=pause;
+  play=function(){_play();postPlay();};
+  pause=function(){_pause();postMitro({mitro:'pause'});};
+  setInterval(function(){if(!audio.paused)postMitro({mitro:'time',time:audio.currentTime,dur:dur()});},120);
+  window.addEventListener('message',function(e){var d=e.data;if(!d||!d.mitroCmd)return;var a=d.mitroCmd;
+    if(a==='toggle')toggle();else if(a==='play')play();else if(a==='pause')pause();
+    else if(a==='stop'){if(!audio.paused)pause();}
+    else if(a==='next')selectTrack((idx+1)%RELEASES[rel].tracks.length,true);
+    else if(a==='prev')selectTrack((idx-1+RELEASES[rel].tracks.length)%RELEASES[rel].tracks.length,true);
+    else if(a==='seek'){var tt=(d.frac||0)*dur();try{audio.currentTime=tt;}catch(_){}}
+    else if(a==='vol'){audio.volume=Math.min(1,Math.max(0,d.v));}
+  });
+}
 </script>
 </body>
 </html>
