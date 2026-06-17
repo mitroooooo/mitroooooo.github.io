@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>LISTEN — section demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#0a0c10;color:#e9edf4;font-family:'Inter',system-ui,sans-serif;}
+  body{padding:64px 20px 120px;transition:padding-bottom .4s ease;}
+  body.barpad{padding-bottom:150px;}
+  .wrap{max-width:1120px;margin:0 auto;}
+  .lead{margin:0 0 40px;}
+  .lead .ey{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#fffc52;font-weight:600;}
+  .lead h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(46px,8vw,84px);line-height:.92;margin:6px 0 0;letter-spacing:.01em;
+    background:linear-gradient(180deg,#fff 0%,#aeb6c4 60%,#7f8796 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .lead .sub{color:#8a93a3;font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin-top:10px;}
+  .preveal{opacity:0;transform:translateY(26px) scale(.985);
+    transition:opacity .85s cubic-bezier(.16,1,.3,1),transform .85s cubic-bezier(.16,1,.3,1);
+    margin-bottom:30px;will-change:opacity,transform;}
+  .preveal.in{opacity:1;transform:none;}
+  iframe.pl{width:100%;border:0;display:block;background:transparent;height:560px;}
+  .hint{color:#5a6371;font-size:11px;letter-spacing:.16em;text-transform:uppercase;text-align:center;margin:28px 0 0;}
+
+  /* shared bottom bar */
+  .barpad-spacer{height:0}
+  .nowbar{position:fixed;left:0;right:0;bottom:0;z-index:9999;display:flex;align-items:center;gap:16px;padding:10px 22px;
+    background:rgba(11,13,17,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-top:1px solid rgba(255,255,255,.08);box-shadow:0 -10px 40px rgba(0,0,0,.5);
+    transform:translateY(130%);transition:transform .5s cubic-bezier(.16,1,.3,1);}
+  .nowbar.show{transform:translateY(0);}
+  .nb-cover{width:46px;height:46px;border-radius:7px;object-fit:cover;flex:0 0 auto;background:#000;box-shadow:0 2px 10px rgba(0,0,0,.4);}
+  .nb-meta{display:flex;flex-direction:column;justify-content:center;min-width:120px;max-width:190px;flex:0 0 auto;line-height:1.25;}
+  .nb-title{color:#e9edf4;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .nb-cat{color:#8a93a3;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .nb-btns{display:flex;align-items:center;gap:4px;flex:0 0 auto;}
+  .nb-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:#cfd5e0;cursor:pointer;border-radius:50%;transition:.15s;}
+  .nb-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
+  .nb-btn svg{width:19px;height:19px;fill:currentColor;}
+  .nb-play{width:40px;height:40px;background:#fff;color:#0b0d11;}
+  .nb-play:hover{background:#fff;color:#0b0d11;transform:scale(1.06);}
+  .nb-wavewrap{flex:1 1 auto;display:flex;align-items:center;gap:12px;min-width:120px;}
+  .nb-time{color:#8a93a3;font-size:11px;font-variant-numeric:tabular-nums;flex:0 0 auto;width:36px;text-align:center;}
+  #nb-wave{flex:1 1 auto;height:46px;cursor:pointer;display:block;width:100%;}
+  .nb-vol{width:90px;flex:0 0 auto;accent-color:#cfd5e0;cursor:pointer;}
+  @media(max-width:680px){.nb-meta{max-width:96px;min-width:64px;}.nb-vol{display:none;}.nb-prev,.nb-next{display:none;}.nb-time{display:none;}.nowbar{gap:10px;padding:8px 12px;}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="lead">
+      <div class="ey">THE MITRO</div>
+      <h1>LISTEN</h1>
+      <div class="sub">Soundtrack / Library</div>
+    </div>
+    <div class="preveal"><iframe class="pl" src="listen-player.html?rel=bangers" loading="lazy" allow="autoplay" title="Bangers"></iframe></div>
+    <div class="preveal"><iframe class="pl" src="listen-player.html?rel=emotional" loading="lazy" allow="autoplay" title="Emotional"></iframe></div>
+    <div class="preveal"><iframe class="pl" src="listen-player.html?rel=soundtrack-library" loading="lazy" allow="autoplay" title="Soundtrack / Library"></iframe></div>
+    <div class="preveal"><iframe class="pl" src="listen-player.html?rel=thriller-action" loading="lazy" allow="autoplay" title="Thriller / Action"></iframe></div>
+    <p class="hint">Hidden test page · 4 players · one shared bar · plays your real files</p>
+  </div>
+
+  <div class="nowbar" id="nowbar" aria-label="Now playing">
+    <img class="nb-cover" id="nb-cover" alt="">
+    <div class="nb-meta"><div class="nb-title" id="nb-title">—</div><div class="nb-cat" id="nb-cat"></div></div>
+    <div class="nb-btns">
+      <button class="nb-btn nb-prev" id="nb-prev" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M7 6h2v12H7zM20 6v12l-9-6z"/></svg></button>
+      <button class="nb-btn nb-play" id="nb-play" aria-label="Play"><svg id="nb-playicon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+      <button class="nb-btn nb-next" id="nb-next" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M15 6h2v12h-2zM4 6l9 6-9 6z"/></svg></button>
+    </div>
+    <div class="nb-wavewrap">
+      <span class="nb-time" id="nb-cur">0:00</span>
+      <canvas id="nb-wave" aria-label="Waveform — click to seek"></canvas>
+      <span class="nb-time" id="nb-tot">0:00</span>
+    </div>
+    <input class="nb-vol" id="nb-vol" type="range" min="0" max="1" step="0.01" value="0.7" aria-label="Volume">
+    <button class="nb-btn nb-close" id="nb-close" aria-label="Close player"><svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+  </div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var fmt=function(s){s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+  var frames=[].slice.call(document.querySelectorAll('iframe.pl'));
+
+  // soft reveal on scroll
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(ents){ents.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.12});
+    document.querySelectorAll('.preveal').forEach(function(el){io.observe(el);});
+  } else { document.querySelectorAll('.preveal').forEach(function(el){el.classList.add('in');}); }
+
+  // shared bar state
+  var activeWin=null, barWave=null, barDur=0, barTime=0, barStamp=0, barPlaying=false, barFrac=0;
+
+  function showBar(){$('nowbar').classList.add('show');document.body.classList.add('barpad');}
+  function hideBar(){$('nowbar').classList.remove('show');document.body.classList.remove('barpad');}
+  function setPlay(on){barPlaying=on;barStamp=performance.now();
+    $('nb-playicon').innerHTML=on?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M8 5v14l11-7z"/>';}
+  function cmd(win,action,extra){if(!win)return;var m={mitroCmd:action};if(extra)for(var k in extra)m[k]=extra[k];win.postMessage(m,'*');}
+  function stopOthers(except){frames.forEach(function(f){if(f.contentWindow!==except)cmd(f.contentWindow,'stop');});}
+
+  function drawBar(){var c=$('nb-wave');if(!c)return;
+    var dpr=window.devicePixelRatio||1,cw=c.clientWidth,ch=c.clientHeight||46;if(cw<2)return;
+    if(c._w!==cw||c._h!==ch){c.width=cw*dpr;c.height=ch*dpr;c.getContext('2d').setTransform(dpr,0,0,dpr,0,0);c._w=cw;c._h=ch;}
+    var g=c.getContext('2d'),W=cw,H=ch;g.clearRect(0,0,W,H);
+    if(!barWave){return;}
+    var pk=barWave,n=pk.length,bw=W/n,mid=H/2,played=Math.min(barFrac,1);
+    for(var i=0;i<n;i++){var v=Math.pow(pk[i]/100,1.18);var hh=Math.max(1.4,v*H*0.86),x=i*bw,fr=(i+0.5)/n;
+      g.fillStyle=fr<=played?'#cfd5e0':'#39414f';var bwid=Math.max(1,bw*0.66);g.fillRect(x+(bw-bwid)/2,mid-hh/2,bwid,hh);}
+    g.fillStyle='#fffc52';g.fillRect(played*W-1,0,2,H);}
+
+  function barLoop(){requestAnimationFrame(barLoop);
+    if(barDur>0){var t=barPlaying?barTime+(performance.now()-barStamp)/1000:barTime;if(t>barDur)t=barDur;
+      barFrac=t/barDur;$('nb-cur').textContent=fmt(t);}
+    drawBar();}
+  requestAnimationFrame(barLoop);
+
+  // messages from player iframes
+  window.addEventListener('message',function(e){
+    var d=e.data;if(!d)return;
+    if(typeof d.mitroHeight==='number'){
+      for(var i=0;i<frames.length;i++){if(frames[i].contentWindow===e.source){frames[i].style.height=d.mitroHeight+'px';break;}}
+      return;
+    }
+    if(d.mitro==='play'){
+      activeWin=e.source;
+      barWave=d.wave||null;barDur=d.dur||0;barTime=d.time||0;barStamp=performance.now();
+      $('nb-title').textContent=d.title||'';$('nb-cat').textContent=d.cat||'';
+      $('nb-tot').textContent=fmt(d.dur||0);if(d.cover)$('nb-cover').src=d.cover;
+      setPlay(true);showBar();stopOthers(e.source);
+      return;
+    }
+    if(e.source!==activeWin)return; // ignore non-active players
+    if(d.mitro==='time'){barTime=d.time||0;if(d.dur)barDur=d.dur;barStamp=performance.now();}
+    else if(d.mitro==='pause'){setPlay(false);barTime=barTime;}
+  });
+
+  // bar controls
+  $('nb-play').onclick=function(){if(activeWin)cmd(activeWin,'toggle');};
+  $('nb-prev').onclick=function(){if(activeWin)cmd(activeWin,'prev');};
+  $('nb-next').onclick=function(){if(activeWin)cmd(activeWin,'next');};
+  $('nb-close').onclick=function(){if(activeWin)cmd(activeWin,'pause');hideBar();};
+  $('nb-vol').oninput=function(){var v=parseFloat(this.value);frames.forEach(function(f){cmd(f.contentWindow,'vol',{v:v});});};
+  (function(){var c=$('nb-wave'),drag=false;
+    function seek(clientX){var r=c.getBoundingClientRect();var frac=Math.min(Math.max((clientX-r.left)/r.width,0),1);
+      barFrac=frac;barTime=frac*barDur;barStamp=performance.now();if(activeWin)cmd(activeWin,'seek',{frac:frac});}
+    c.addEventListener('pointerdown',function(e){drag=true;seek(e.clientX);});
+    window.addEventListener('pointermove',function(e){if(drag)seek(e.clientX);});
+    window.addEventListener('pointerup',function(){drag=false;});
+  })();
+})();
+</script>
+</body>
+</html>
