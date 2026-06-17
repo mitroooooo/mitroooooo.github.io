@@ -213,7 +213,7 @@ function seekAt(c,clientX){if(!c)return;const r=c.getBoundingClientRect();const 
 function loadRelease(r){rel=r;const R=RELEASES[r];
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',i===r));
   const[a,b]=splitTitle(R.title);$('bigtitle').innerHTML='<span class="a">'+a+'</span> <span class="b">'+b+'</span>';
-  $('albtitle').textContent=R.title;$('albsub').textContent=R.kind+' · THE MITRO';
+  $('albtitle').textContent=R.title;$('albsub').textContent='THE MITRO';
   var lr=document.getElementById('listenrow');if(lr)lr.style.display=(R.spotify||R.apple)?'flex':'none';if(R.spotify)$('lk-spotify').href=R.spotify;if(R.apple)$('lk-apple').href=R.apple;
   const art=$('art');art.style.display='block';art.onerror=()=>{art.style.display='none';};art.src=R.cover;
   const list=$('tracks');list.innerHTML='';
