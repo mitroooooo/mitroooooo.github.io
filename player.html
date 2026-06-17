@@ -96,6 +96,12 @@
     .title{font-size:clamp(38px,12vw,60px)}
   }
   @media(prefers-reduced-motion:reduce){.title .a{animation:none}.trkwave{transition:none}}
+  /* embed mode (inside the main site, one release per iframe) */
+  body.embed{min-height:0;padding:0;display:block;background:transparent}
+  .embed .wrap{max-width:100%}
+  .embed .head,.embed .tabs,.embed .note{display:none}
+  .embed .tracks{max-height:none}
+  .embed .player{box-shadow:none;border-color:rgba(233,235,239,.10)}
 </style>
 </head>
 <body>
@@ -142,6 +148,10 @@ const CLIENT_URL = "https://themitro.com/client";
 const PLAY_SVG='<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
 const PAUSE_SVG='<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
 const DL_SVG='<svg viewBox="0 0 24 24"><path d="M11 4h2v8h3.5L12 17 7.5 12H11V4zM5 18h14v2H5z"/></svg>';
+const _params=new URLSearchParams(location.search);
+const _relParam=_params.get('rel');
+const EMBED=!!_relParam||window.parent!==window;
+if(EMBED&&document.body)document.body.classList.add('embed');
 const audio=new Audio(); audio.preload='metadata'; audio.volume=0.70;
 let rel=0,idx=0,scrubbing=false,scrubCv=null;
 const $=id=>document.getElementById(id);
@@ -225,7 +235,13 @@ function drawInto(c){if(!c)return;
     g.fillStyle=fr<=played?'#cfd5e0':'#39414f';g.fillRect(x,mid-h/2,Math.max(0.8,bw-0.5),h);}
   g.fillStyle='#fffc52';g.fillRect(played*W-1,0,2,H);}
 function loop(){requestAnimationFrame(loop);if(!audio.paused)$('cur').textContent=fmt(audio.currentTime);drawInto(waveCanvas());}
-loadRelease(0);requestAnimationFrame(loop);
+let _start=0;if(_relParam){const k=RELEASES.findIndex(r=>r.id===_relParam);if(k>=0)_start=k;}
+loadRelease(_start);requestAnimationFrame(loop);
+function postHeight(){if(window.parent===window)return;const el=document.querySelector('.wrap');if(!el)return;
+  const h=Math.ceil(el.getBoundingClientRect().height)+10;parent.postMessage({mitroHeight:h,rel:_relParam||''},'*');}
+if(EMBED){window.addEventListener('load',postHeight);window.addEventListener('resize',postHeight);
+  if(window.ResizeObserver){try{new ResizeObserver(postHeight).observe(document.querySelector('.wrap'));}catch(e){}}
+  setTimeout(postHeight,200);setTimeout(postHeight,800);setTimeout(postHeight,1600);}
 </script>
 </body>
 </html>
