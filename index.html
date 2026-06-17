@@ -923,11 +923,13 @@
 
     .listen-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
+      grid-template-columns: 1fr;
+      gap: 46px;
       max-width: 1000px;
       margin: 0 auto;
+      padding-bottom: 40px;
     }
+    body.mitro-bar-open #section-listen { padding-bottom: 130px; }
 
     .listen-label {
       font-size: 11px;
@@ -1034,7 +1036,29 @@
       color: var(--muted);
     }
 
-    .disco-embed { display: block; border: 0; }
+        .disco-embed { display: block; border: 0; }
+
+    /* ── shared now-playing bottom bar (LISTEN) ── */
+    .mitro-nowbar{position:fixed;left:0;right:0;bottom:0;z-index:8000;display:flex;align-items:center;gap:16px;padding:10px 22px;
+      background:rgba(11,13,17,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-top:1px solid rgba(255,255,255,.08);box-shadow:0 -10px 40px rgba(0,0,0,.5);
+      transform:translateY(130%);transition:transform .5s cubic-bezier(.16,1,.3,1);font-family:'Inter',system-ui,sans-serif;}
+    .mitro-nowbar.show{transform:translateY(0);}
+    .nb-cover{width:46px;height:46px;border-radius:7px;object-fit:cover;flex:0 0 auto;background:#000;box-shadow:0 2px 10px rgba(0,0,0,.4);}
+    .nb-meta{display:flex;flex-direction:column;justify-content:center;min-width:120px;max-width:190px;flex:0 0 auto;line-height:1.25;}
+    .nb-title{color:#e9edf4;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .nb-cat{color:#8a93a3;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .nb-btns{display:flex;align-items:center;gap:4px;flex:0 0 auto;}
+    .nb-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:#cfd5e0;cursor:pointer;border-radius:50%;transition:.15s;}
+    .nb-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
+    .nb-btn svg{width:19px;height:19px;fill:currentColor;}
+    .nb-play{width:40px;height:40px;background:#fff;color:#0b0d11;}
+    .nb-play:hover{background:#fff;color:#0b0d11;transform:scale(1.06);}
+    .nb-wavewrap{flex:1 1 auto;display:flex;align-items:center;gap:12px;min-width:120px;}
+    .nb-time{color:#8a93a3;font-size:11px;font-variant-numeric:tabular-nums;flex:0 0 auto;width:36px;text-align:center;}
+    #nb-wave{flex:1 1 auto;height:46px;cursor:pointer;display:block;width:100%;}
+    .nb-vol{width:90px;flex:0 0 auto;accent-color:#cfd5e0;cursor:pointer;}
+    @media(max-width:680px){.nb-meta{max-width:96px;min-width:64px;}.nb-vol{display:none;}.nb-prev,.nb-next{display:none;}.nb-time{display:none;}.mitro-nowbar{gap:10px;padding:8px 12px;}}
 
     /* player reveal — uses TRANSLATE (not scale): a translated layer is composited as-is, while
        scaling forces Chrome to re-rasterize the player iframe every frame (Safari did it cheaply). */
@@ -1479,31 +1503,19 @@
     <div class="listen-grid">
 
       <div class="listen-col player-reveal">
-        <p class="listen-label">BANGERS</p>
-        <div class="player-frame"><iframe id="disco-playlist-29706706" name="disco-playlist-29706706" allowfullscreen frameborder="0" class="disco-embed"
-          src="https://themitro.disco.ac/e/p/29706706?download=false&s=X-eQ45lsJXUw47_Fw7oUC_PwDqQ%3ACJj8dtLy&artwork=true&color=%23FFFC52&theme=dark"
-          width="100%" height="820"></iframe><div class="player-mask"></div></div>
+        <div class="player-frame"><iframe class="widget-embed mitro-player listen-mp" src="/listen-player.html?rel=bangers" height="560" allow="autoplay" loading="lazy"></iframe><div class="player-mask"></div></div>
       </div>
 
       <div class="listen-col player-reveal">
-        <p class="listen-label">EMOTIONAL/SLOWBURN</p>
-        <div class="player-frame"><iframe id="disco-playlist-29706741" name="disco-playlist-29706741" allowfullscreen frameborder="0" class="disco-embed"
-          src="https://themitro.disco.ac/e/p/29706741?download=false&s=9y8iZD_pwGmspn9geW-FgMBK5PE%3AhIx8YKJE&artwork=true&color=%23FFFC52&theme=dark"
-          width="100%" height="820"></iframe><div class="player-mask"></div></div>
+        <div class="player-frame"><iframe class="widget-embed mitro-player listen-mp" src="/listen-player.html?rel=emotional" height="560" allow="autoplay" loading="lazy"></iframe><div class="player-mask"></div></div>
       </div>
 
       <div class="listen-col player-reveal">
-        <p class="listen-label">SOUNDTRACK/LIBRARY</p>
-        <div class="player-frame"><iframe id="disco-playlist-29706794" name="disco-playlist-29706794" allowfullscreen frameborder="0" class="disco-embed"
-          src="https://themitro.disco.ac/e/p/29706794?download=false&s=ht-YpOq8nXiYIABajT9eQUrjHdg%3A4WqeLh8M&artwork=true&color=%23FFFC52&theme=dark"
-          width="100%" height="820"></iframe><div class="player-mask"></div></div>
+        <div class="player-frame"><iframe class="widget-embed mitro-player listen-mp" src="/listen-player.html?rel=soundtrack-library" height="560" allow="autoplay" loading="lazy"></iframe><div class="player-mask"></div></div>
       </div>
 
       <div class="listen-col player-reveal">
-        <p class="listen-label">THRILLER/ACTION</p>
-        <div class="player-frame"><iframe id="disco-playlist-29706851" name="disco-playlist-29706851" allowfullscreen frameborder="0" class="disco-embed"
-          src="https://themitro.disco.ac/e/p/29706851?download=false&s=TXjZkdmyWhYbLhCpvT9kxHMpNQ8%3AcpAqw6WM&artwork=true&color=%23FFFC52&theme=dark"
-          width="100%" height="820"></iframe><div class="player-mask"></div></div>
+        <div class="player-frame"><iframe class="widget-embed mitro-player listen-mp" src="/listen-player.html?rel=thriller-action" height="560" allow="autoplay" loading="lazy"></iframe><div class="player-mask"></div></div>
       </div>
 
     </div>
@@ -1723,6 +1735,7 @@
   function reloadIframes(sec) {
     // physically recreate each iframe -> kills audio AND guarantees fresh load
     sec.querySelectorAll('iframe').forEach(f => {
+      if (f.classList.contains('mitro-player')) return; // our persistent players are never recreated
       const src = f.dataset.liveSrc || f.src;
       if (!src || src === 'about:blank') return;
       f.dataset.liveSrc = src;
@@ -1740,6 +1753,7 @@
   function muteSection(sec) {
     // kill audio by blanking iframes (recreated when section is next opened)
     sec.querySelectorAll('iframe').forEach(f => {
+      if (f.classList.contains('mitro-player')) return; // our players (SOLO+LISTEN) keep playing across navigation
       if (f.src && f.src !== 'about:blank') {
         f.dataset.liveSrc = f.src;
         f.src = 'about:blank';
@@ -2345,6 +2359,7 @@
       item.appendChild(close);
 
       item.classList.add('playing');
+      if (window.__listenBarStop) window.__listenBarStop(); // a trailer takes over audio: stop the music + hide the bar
     });
   });
 
@@ -2417,6 +2432,23 @@
   <div class="page-arrow right" onclick="navigatePage(1)" aria-label="Next page">
     <svg viewBox="0 0 24 24" fill="none"><polyline points="10,5 17,12 10,19"/></svg>
   </div>
+  <div class="mitro-nowbar" id="nowbar" aria-label="Now playing">
+    <img class="nb-cover" id="nb-cover" alt="">
+    <div class="nb-meta"><div class="nb-title" id="nb-title">—</div><div class="nb-cat" id="nb-cat"></div></div>
+    <div class="nb-btns">
+      <button class="nb-btn nb-prev" id="nb-prev" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M7 6h2v12H7zM20 6v12l-9-6z"/></svg></button>
+      <button class="nb-btn nb-play" id="nb-play" aria-label="Play"><svg id="nb-playicon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+      <button class="nb-btn nb-next" id="nb-next" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M15 6h2v12h-2zM4 6l9 6-9 6z"/></svg></button>
+    </div>
+    <div class="nb-wavewrap">
+      <span class="nb-time" id="nb-cur">0:00</span>
+      <canvas id="nb-wave" aria-label="Waveform"></canvas>
+      <span class="nb-time" id="nb-tot">0:00</span>
+    </div>
+    <input class="nb-vol" id="nb-vol" type="range" min="0" max="1" step="0.01" value="0.7" aria-label="Volume">
+    <button class="nb-btn nb-close" id="nb-close" aria-label="Close player"><svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+  </div>
+
   <script>
   /* size each embedded THE MITRO player iframe to its content (sent via postMessage) */
   window.addEventListener('message', function (e) {
@@ -2426,6 +2458,60 @@
       if (f.contentWindow === e.source) f.style.height = d.mitroHeight + 'px';
     });
   });
+  </script>
+
+  <script>
+  /* ── shared LISTEN now-playing bar: mirrors & controls whichever listen-player iframe is active ── */
+  (function(){
+    var $=function(id){return document.getElementById(id);};
+    var fmt=function(s){s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+    var bar=$('nowbar'); if(!bar) return;
+    var activeWin=null, wave=null, dur=0, t0=0, stamp=0, playing=false, frac=0;
+    function listenFrames(){return [].slice.call(document.querySelectorAll('iframe.mitro-player'));}
+    function show(){bar.classList.add('show');document.body.classList.add('mitro-bar-open');}
+    function hide(){bar.classList.remove('show');document.body.classList.remove('mitro-bar-open');activeWin=null;playing=false;}
+    function stopAll(){listenFrames().forEach(function(f){cmd(f.contentWindow,'stop');});hide();}
+    window.__listenBarStop=stopAll;
+    function setPlay(on){playing=on;stamp=performance.now();
+      $('nb-playicon').innerHTML=on?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M8 5v14l11-7z"/>';}
+    function cmd(win,action,extra){if(!win)return;var m={mitroCmd:action};if(extra)for(var k in extra)m[k]=extra[k];try{win.postMessage(m,'*');}catch(e){}}
+    function stopOthers(except){listenFrames().forEach(function(f){if(f.contentWindow!==except)cmd(f.contentWindow,'stop');});}
+    function draw(){var c=$('nb-wave');if(!c)return;
+      var dpr=window.devicePixelRatio||1,cw=c.clientWidth,ch=c.clientHeight||46;if(cw<2)return;
+      if(c._w!==cw||c._h!==ch){c.width=cw*dpr;c.height=ch*dpr;c.getContext('2d').setTransform(dpr,0,0,dpr,0,0);c._w=cw;c._h=ch;}
+      var g=c.getContext('2d'),W=cw,H=ch;g.clearRect(0,0,W,H);if(!wave)return;
+      var pk=wave,n=pk.length,bw=W/n,mid=H/2,played=Math.min(frac,1);
+      for(var i=0;i<n;i++){var v=Math.pow(pk[i]/100,1.18);var hh=Math.max(1.4,v*H*0.86),x=i*bw,fr=(i+0.5)/n;
+        g.fillStyle=fr<=played?'#cfd5e0':'#39414f';var bwid=Math.max(1,bw*0.66);g.fillRect(x+(bw-bwid)/2,mid-hh/2,bwid,hh);}
+      g.fillStyle='#fffc52';g.fillRect(played*W-1,0,2,H);}
+    function loop(){requestAnimationFrame(loop);
+      if(dur>0){var t=playing?t0+(performance.now()-stamp)/1000:t0;if(t>dur)t=dur;frac=t/dur;$('nb-cur').textContent=fmt(t);}
+      draw();}
+    requestAnimationFrame(loop);
+    window.addEventListener('message',function(e){
+      var d=e.data;if(!d)return;
+      if(d.mitro==='play'){
+        activeWin=e.source;wave=d.wave||null;dur=d.dur||0;t0=d.time||0;stamp=performance.now();
+        $('nb-title').textContent=d.title||'';$('nb-cat').textContent=d.cat||'';
+        $('nb-tot').textContent=fmt(d.dur||0);if(d.cover)$('nb-cover').src=d.cover;
+        setPlay(true);show();stopOthers(e.source);return;
+      }
+      if(e.source!==activeWin)return;
+      if(d.mitro==='time'){t0=d.time||0;if(d.dur)dur=d.dur;stamp=performance.now();}
+      else if(d.mitro==='pause'){setPlay(false);}
+    });
+    $('nb-play').onclick=function(){if(activeWin)cmd(activeWin,'toggle');};
+    $('nb-prev').onclick=function(){if(activeWin)cmd(activeWin,'prev');};
+    $('nb-next').onclick=function(){if(activeWin)cmd(activeWin,'next');};
+    $('nb-close').onclick=function(){if(activeWin)cmd(activeWin,'pause');hide();};
+    $('nb-vol').oninput=function(){var v=parseFloat(this.value);listenFrames().forEach(function(f){cmd(f.contentWindow,'vol',{v:v});});};
+    (function(){var c=$('nb-wave'),drag=false;
+      function seek(x){var r=c.getBoundingClientRect();var f=Math.min(Math.max((x-r.left)/r.width,0),1);frac=f;t0=f*dur;stamp=performance.now();if(activeWin)cmd(activeWin,'seek',{frac:f});}
+      c.addEventListener('pointerdown',function(e){drag=true;seek(e.clientX);});
+      window.addEventListener('pointermove',function(e){if(drag)seek(e.clientX);});
+      window.addEventListener('pointerup',function(){drag=false;});
+    })();
+  })();
   </script>
 
 </body>
