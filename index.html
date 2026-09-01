@@ -1511,6 +1511,10 @@
       </div>
 
       <div class="listen-col player-reveal">
+        <div class="player-frame"><iframe class="widget-embed mitro-player listen-mp" src="/listen-player.html?rel=magic-quirky" height="560" allow="autoplay" loading="lazy"></iframe><div class="player-mask"></div></div>
+      </div>
+
+      <div class="listen-col player-reveal">
         <div class="player-frame"><iframe class="widget-embed mitro-player listen-mp" src="/listen-player.html?rel=soundtrack-library" height="560" allow="autoplay" loading="lazy"></iframe><div class="player-mask"></div></div>
       </div>
 
@@ -2496,6 +2500,7 @@
         $('nb-tot').textContent=fmt(d.dur||0);if(d.cover)$('nb-cover').src=d.cover;
         setPlay(true);show();stopOthers(e.source);attachFrameKeys();return;
       }
+      if(d.mitro==='vol'){var nv=document.getElementById('nb-vol');if(nv)nv.value=d.v;listenFrames().forEach(function(f){if(f.contentWindow!==e.source)cmd(f.contentWindow,'vol',{v:d.v});});return;}
       if(e.source!==activeWin)return;
       if(d.mitro==='time'){t0=d.time||0;if(d.dur)dur=d.dur;stamp=performance.now();}
       else if(d.mitro==='pause'){setPlay(false);}
